@@ -17,8 +17,7 @@ public class UndergraduateDashboard extends JFrame {
     private static final Color WHITE = Color.WHITE;
     private static final Color BLACK = Color.BLACK;
     private static final Color BORDER = new Color(229, 231, 235);
-    private static final Color GREEN = new Color(16, 185, 129);
-    private static final Color ORANGE = new Color(245, 158, 11);
+
 
     // =========================================================
     // MAIN PANELS
