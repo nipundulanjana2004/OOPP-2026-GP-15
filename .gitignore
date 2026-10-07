@@ -30,3 +30,7 @@ Thumbs.db
 # Logs
 *.log
 
+# Environment / secrets
+.env
+.env.*
+!.env.example
