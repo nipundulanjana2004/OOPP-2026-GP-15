@@ -65,13 +65,13 @@ public abstract class CoursePanel extends BasePanel {
         studentBox.removeAllItems();
         studentBox.addItem(WHOLE_BATCH);
         Course c = selectedCourse();
-        if (c == null) return;
-        try {
-            students = new LookupDAO().studentsOfCourse(c.getCourseId());
-        } catch (DatabaseException e) {
-            Dialogs.handle(this, e);
-        }
-        if (withStudent) for (StudentInfo s : students) studentBox.addItem(s);
+//        if (c == null) return;
+//        try {
+//            students = new LookupDAO().studentsOfCourse(c.getCourseId());
+//        } catch (DatabaseException e) {
+//            Dialogs.handle(this, e);
+//        }
+//        if (withStudent) for (StudentInfo s : students) studentBox.addItem(s);
     }
 
     @Override
