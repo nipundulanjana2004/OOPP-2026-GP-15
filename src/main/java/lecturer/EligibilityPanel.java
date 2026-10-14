@@ -36,17 +36,17 @@ public class EligibilityPanel extends CoursePanel {
         int eligible = 0;
         try {
             Course c = selectedCourse();
-            if (c != null) {
-                List<CourseResult> list = new ArrayList<>();
-                if (selectedStudent() == null) list = lecturer.viewEligibility(c);
-                else list.add(new ReportService().resultFor(selectedStudent(), c));
-                for (CourseResult r : list) {
-                    if (r.isOverallEligible()) eligible++;
-                    rows.add(new Object[]{r.getStudent().getRegistrationNumber(), r.getStudent().getFullName(),
-                            c.hasTheory() ? pct(r.getAttendanceTheoryPercent()) : "-", c.hasPractical() ? pct(r.getAttendancePracticalPercent()) : "-",
-                            pct(r.getAttendanceOverallPercent()), pct(r.getCaMarks()),
-                            r.isAttendanceEligible() ? "YES" : "NO", r.isCaEligible() ? "YES" : "NO", r.eligibilityText(), r.eligibilityReason()});
-                }
+//            if (c != null) {
+//                List<CourseResult> list = new ArrayList<>();
+//                if (selectedStudent() == null) list = lecturer.viewEligibility(c);
+//                else list.add(new ReportService().resultFor(selectedStudent(), c));
+//                for (CourseResult r : list) {
+//                    if (r.isOverallEligible()) eligible++;
+//                    rows.add(new Object[]{r.getStudent().getRegistrationNumber(), r.getStudent().getFullName(),
+//                            c.hasTheory() ? pct(r.getAttendanceTheoryPercent()) : "-", c.hasPractical() ? pct(r.getAttendancePracticalPercent()) : "-",
+//                            pct(r.getAttendanceOverallPercent()), pct(r.getCaMarks()),
+//                            r.isAttendanceEligible() ? "YES" : "NO", r.isCaEligible() ? "YES" : "NO", r.eligibilityText(), r.eligibilityReason()});
+//                }
                 summary.setText("Eligible: " + eligible + " of " + rows.size());
             }
         } catch (DatabaseException e) {
