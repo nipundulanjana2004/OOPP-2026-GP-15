@@ -1,0 +1,9 @@
+out/
+target/
+*.class
+sources.txt
+.idea/
+*.iml
+profile_pictures/
+lib/*.jar
+.DS_Store
