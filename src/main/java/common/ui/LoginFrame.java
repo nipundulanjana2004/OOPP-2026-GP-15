@@ -59,7 +59,7 @@ public class LoginFrame extends JFrame {
         c.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         c.setForeground(new Color(0xB5C3E6));
         c.setBounds(48, 250, 420, 50);
-        JLabel d = new JLabel("University of Ruhuna  |  ICT2132 Mini Project  |  Group 15");
+        JLabel d = new JLabel("University of Ruhuna | Faculty Of Technology");
         d.setFont(Theme.SMALL);
         d.setForeground(new Color(0x9FB0DA));
         d.setBounds(48, 520, 420, 20);

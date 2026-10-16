@@ -16,7 +16,7 @@ public class Main {
                 new LoginFrame().setVisible(true);
             } catch (DatabaseException e) {
                 e.printStackTrace();
-                Dialogs.error(null, e.getMessage() + "\n\nOpen db.properties, set your MySQL user/password, start MySQL and run again.");
+                Dialogs.error(null, e.getMessage() + "\n\nOpen db.properties, canot open set your MySQL user/passwod");
                 System.exit(1);
             }
         });
