@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : M4 - UNDERGRADUATE
- *  PURPOSE : The Undergraduate user (class diagram: Undergraduate). Can change ONLY contact details + profile photo; views own attendance, medicals, courses, grades, SGPA/CGPA.
- *  PLUGS IN: Created by common.UserFactory when role = UNDERGRADUATE; used by every undergraduate screen.
- *  OOP     : INHERITANCE (extends common.User), POLYMORPHISM (strictest getEditableFields/updateProfile of all roles), ENCAPSULATION (registration number is read-only), composition (HAS a Batch and a Department).
- * ====================================================================
- */
+
 package undergraduate;
 
 import common.*;
@@ -37,7 +30,7 @@ public class Undergraduate extends User {
     @Override
     public int getBatchId() { return batch.getBatchId(); }
 
-    /** This student as the small value object the shared services use. */
+
     public StudentInfo toStudentInfo() {
         StudentInfo s = new StudentInfo(getUserId(), registrationNumber, getFullName());
         s.setBatchName(batch.getBatchName());
@@ -46,12 +39,12 @@ public class Undergraduate extends User {
         return s;
     }
 
-    // ---------- behaviour from the class diagram (everything is limited to THIS student) ----------
+
     public List<CourseRegistration> viewCourses() throws DatabaseException {
         return dao.registrationsOf(getUserId());
     }
 
-    /** A student can only look at courses they are registered in. */
+
     public AttendanceSummary viewAttendance(Course c) throws AppException {
         if (!dao.isRegistered(getUserId(), c.getCourseId())) {
             throw new StudentViewException("You are not registered for " + c.getCourseCode() + ".");
@@ -73,7 +66,7 @@ public class Undergraduate extends User {
 
     public UndergraduateDAO data() { return dao; }
 
-    // ---------- overrides: the most restricted profile of all roles ----------
+
     @Override
     public Set<String> getEditableFields() {
         return new HashSet<>(Arrays.asList("email", "contactNumber", "address", "profilePicture"));
