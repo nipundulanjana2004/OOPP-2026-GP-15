@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : M4 - UNDERGRADUATE
- *  PURPOSE : My medical records and whether they were APPROVED, REJECTED or are still PENDING (FR-28). View only - medicals are recorded by the Technical Officer (M3).
- *  PLUGS IN: UndergraduateDashboard -> 'My Medicals'. Uses Undergraduate.viewMedicals() -> common.ReportService.
- *  OOP     : Inheritance (extends UndergraduateViewPanel).
- * ====================================================================
- */
+
 package undergraduate;
 
 import common.*;
