@@ -1,11 +1,3 @@
-/*
- * ====================================================================
- *  PART    : M4 - UNDERGRADUATE
- *  PURPOSE : The Undergraduate window: sidebar + pages. Opened by common.RoleRouter after an Undergraduate logs in.
- *  PLUGS IN: common.LoginFrame -> RoleRouter -> new UndergraduateDashboard(user). Reuses common NoticePanel, TimetablePanel (MINE mode), ProfilePanel.
- *  OOP     : INHERITANCE (extends common.ui.DashboardFrame), POLYMORPHISM.
- * ====================================================================
- */
 package undergraduate;
 
 import common.User;
