@@ -7,3 +7,4 @@ sources.txt
 profile_pictures/
 lib/*.jar
 .DS_Store
+vcs.xml.backup
