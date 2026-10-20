@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : COMMON (shared by M1-M4) (M1 extends it for admin work; every role logs in through it)
- *  PURPOSE : Login + load/save users. Handles the shared app_user table and delegates the role table to each User subclass.
- *  PLUGS IN: LoginFrame.authenticate(); M1 UserAdminDAO extends this class; M2/M3/M4 profile saves use update().
- *  OOP     : Inheritance, POLYMORPHISM (user.getRoleTable()/getRoleColumns()), JDBC PreparedStatement, transactions.
- * ====================================================================
- */
+
 package common;
 
 import java.sql.Date;
@@ -26,7 +19,7 @@ public class UserDAO extends BaseDAO {
             "LEFT JOIN undergraduate g ON g.user_id=u.user_id LEFT JOIN batch b ON b.batch_id=g.batch_id " +
             "LEFT JOIN department d ON d.department_id=COALESCE(l.department_id, t.department_id, g.department_id) ";
 
-    /** Turns one row into the right subclass (Admin / Lecturer / TechnicalOfficer / Undergraduate). */
+
     protected User mapUser(ResultSet rs) throws SQLException, AppException {
         Role role = Role.valueOf(rs.getString("role"));
         User u = UserFactory.create(role);
@@ -98,7 +91,7 @@ public class UserDAO extends BaseDAO {
                     try {
                         list.add(mapUser(rs));
                     } catch (ModuleMissingException skip) {
-                        // that member's zip is not installed in this build: leave the user out of the list
+
                     }
                 }
             }
@@ -119,7 +112,7 @@ public class UserDAO extends BaseDAO {
         }
     }
 
-    /** Inserts into app_user AND the role table in ONE transaction. Returns the new user id. */
+
     public int insert(User user, String plainPassword) throws DatabaseException {
         String sql = "INSERT INTO app_user (username,password_hash,first_name,last_name,email,contact_number,address," +
                 "profile_picture,role,is_active,created_date) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
@@ -156,7 +149,7 @@ public class UserDAO extends BaseDAO {
         }
     }
 
-    /** Updates the profile fields of app_user and the role table (not the password). */
+
     public void update(User user) throws DatabaseException {
         String sql = "UPDATE app_user SET username=?, first_name=?, last_name=?, email=?, contact_number=?, address=?, " +
                 "profile_picture=?, is_active=? WHERE user_id=?";
@@ -194,7 +187,7 @@ public class UserDAO extends BaseDAO {
         }
     }
 
-    /** Builds "INSERT ... ON DUPLICATE KEY UPDATE" from whatever columns the subclass reports. */
+
     private void saveRoleRow(User user) throws SQLException, DatabaseException {
         Map<String, Object> cols = user.getRoleColumns();
         StringBuilder names = new StringBuilder("user_id");
@@ -222,7 +215,7 @@ public class UserDAO extends BaseDAO {
         try {
             conn().rollback();
         } catch (Exception ignored) {
-            // nothing more we can do
+
         }
     }
 
@@ -230,7 +223,7 @@ public class UserDAO extends BaseDAO {
         try {
             conn().setAutoCommit(true);
         } catch (Exception ignored) {
-            // nothing more we can do
+
         }
     }
 }
