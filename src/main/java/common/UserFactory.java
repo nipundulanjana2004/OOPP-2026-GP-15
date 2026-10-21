@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : COMMON (shared by M1-M4)
- *  PURPOSE : Builds the correct User subclass for a role. Looks the class up by name so the project still compiles when a member's zip is not installed yet.
- *  PLUGS IN: Role -> admin.Admin (M1) / lecturer.Lecturer (M2) / officer.TechnicalOfficer (M3) / undergraduate.Undergraduate (M4).
- *  OOP     : POLYMORPHISM (callers only see 'User'), Factory pattern, reflection.
- * ====================================================================
- */
+
 package common;
 
 public class UserFactory {

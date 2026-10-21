@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : COMMON (shared by M1-M4) (M1 extends it to create/update/delete; M2, M3, M4 view)
- *  PURPOSE : Reads timetable slots: all, by department (Technical Officer), by undergraduate registrations.
- *  PLUGS IN: TimetablePanel (common UI); M1 TimetableAdminDAO extends it.
- *  OOP     : Inheritance.
- * ====================================================================
- */
+
 package common;
 
 import java.sql.PreparedStatement;
