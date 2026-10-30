@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : COMMON (shared by M1-M4) (parent of Admin M1, Lecturer M2, TechnicalOfficer M3, Undergraduate M4)
- *  PURPOSE : ABSTRACT parent of all users - holds the fields every user has (Group 15 class diagram).
- *  PLUGS IN: Each member extends it in their own package. UserDAO builds the right subclass from the 'role' column.
- *  OOP     : ABSTRACTION (abstract class + abstract methods), INHERITANCE (4 subclasses), ENCAPSULATION, POLYMORPHISM (updateProfile / getRoleColumns behave differently per subclass).
- * ====================================================================
- */
+
 package common;
 
 import java.sql.ResultSet;
@@ -39,7 +32,7 @@ public abstract class User {
         this.role = role;
     }
 
-    // ---------------- getters / setters (encapsulation) ----------------
+
     public int getUserId() { return userId; }
     public void setUserId(int userId) { this.userId = userId; }
     public String getUsername() { return username; }
@@ -73,7 +66,7 @@ public abstract class User {
         return (a + b).toUpperCase();
     }
 
-    // ---------------- behaviour from the class diagram ----------------
+
     public boolean login(String password) {
         return isActive && PasswordUtil.matches(password, passwordHash);
     }
@@ -82,47 +75,41 @@ public abstract class User {
         LoginContext.clear();
     }
 
-    /**
-     * Copies the values in 'data' into this user, but ONLY for the fields this role is allowed to edit.
-     * Keys: firstName, lastName, email, contactNumber, address, profilePicture, username.
-     */
+
     public abstract void updateProfile(Map<String, String> data);
 
-    /** Profile fields this role may edit (the GUI locks everything else). */
+
     public abstract Set<String> getEditableFields();
 
-    /** Name of the role-specific MySQL table, e.g. "lecturer". */
+
     public abstract String getRoleTable();
 
-    /** Role-specific columns to save, e.g. designation, department_id. */
+
     public abstract Map<String, Object> getRoleColumns();
 
-    /** Reads the role-specific columns from a joined row (see UserDAO). */
+
     public abstract void loadRoleDetails(ResultSet rs) throws SQLException;
 
-    /**
-     * Role-specific form values (used by the Admin's user form). Keys: department (Department), batch (Batch),
-     * designation, registrationNumber (String), academicStatus (AttemptType). Each subclass reports only its own.
-     */
+
     public abstract Map<String, Object> getRoleInput();
 
-    /** Reverse of getRoleInput(): copies form values into the subclass's own fields. */
+
     public abstract void setRoleInput(Map<String, Object> input);
 
-    /** Text for the dashboard header, e.g. "Lecturer - ICT". */
+
     public abstract String getRoleSummary();
 
-    /** Department of this user (0 = none). Lecturer, TechnicalOfficer and Undergraduate override this. */
+
     public int getDepartmentId() {
         return 0;
     }
 
-    /** Batch of this user (0 = none). Only Undergraduate overrides this. */
+
     public int getBatchId() {
         return 0;
     }
 
-    /** Helper for subclasses: applies one field, if it is in the allowed set. */
+
     protected void applyField(String key, String value, Set<String> allowed) {
         if (value == null || !allowed.contains(key)) {
             return;

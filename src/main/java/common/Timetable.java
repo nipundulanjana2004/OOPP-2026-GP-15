@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : COMMON (shared by M1-M4) (Admin M1 manages; M2/M3/M4 view)
- *  PURPOSE : One weekly timetable slot.
- *  PLUGS IN: TimetableAdminDAO (M1) writes it; TimetablePanel shows it to every role.
- *  OOP     : Encapsulation + composition (HAS a Course, Batch, Department).
- * ====================================================================
- */
+
 package common;
 
 import java.sql.Time;
