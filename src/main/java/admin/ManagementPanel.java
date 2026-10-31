@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : M1 - ADMIN
- *  PURPOSE : ABSTRACT CRUD screen (table on the left, form on the right, Add / Update / Delete / Clear). Written once; each management screen only supplies its own form + save rules.
- *  PLUGS IN: UserManagementPanel, CourseManagementPanel, NoticeManagementPanel, TimetableManagementPanel extend it.
- *  OOP     : ABSTRACTION (abstract methods, generics <T>), TEMPLATE-METHOD pattern, INHERITANCE + POLYMORPHISM, exception handling in one place.
- * ====================================================================
- */
+
 package admin;
 
 import common.AppException;
@@ -37,7 +30,6 @@ public abstract class ManagementPanel<T> extends BasePanel {
         this.table = new TablePanel("", columns);
     }
 
-    // ---------------- hooks every child must provide ----------------
     protected abstract List<T> loadItems() throws AppException;
     protected abstract Object[] toRow(T item);
     protected abstract void buildForm(FormPanel form);
@@ -47,7 +39,6 @@ public abstract class ManagementPanel<T> extends BasePanel {
     protected abstract void doUpdate(T item) throws AppException;
     protected abstract void doDelete(T item) throws AppException;
 
-    /** Optional extra panel shown under the table (e.g. lecturer assignment). */
     protected JComponent createExtras() {
         return null;
     }
@@ -55,7 +46,6 @@ public abstract class ManagementPanel<T> extends BasePanel {
     protected void onSelectionChanged(T item) {
     }
 
-    /** Child constructors call init() as their LAST line (fields of the child must exist first). */
     protected final void init() {
         buildForm(form);
         form.addButtons(addButton, updateButton);
@@ -98,6 +88,7 @@ public abstract class ManagementPanel<T> extends BasePanel {
                 selected = items.get(i);
                 fillForm(selected);
                 onSelectionChanged(selected);
+                updateButtons();
             }
         });
         updateButtons();
@@ -141,7 +132,6 @@ public abstract class ManagementPanel<T> extends BasePanel {
         updateButtons();
     }
 
-    // small helpers for children
     protected static String need(String value, String fieldName) throws common.ValidationException {
         if (value == null || value.trim().isEmpty()) {
             throw new common.ValidationException(fieldName + " is required.");
