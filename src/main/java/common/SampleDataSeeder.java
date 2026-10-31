@@ -91,7 +91,7 @@ public class SampleDataSeeder {
     private static void doSeed(Connection c) throws SQLException {
         Object[][] grades = {{"A+", 4.0, 85, 100}, {"A", 4.0, 75, 84.99}, {"A-", 3.7, 70, 74.99}, {"B+", 3.3, 65, 69.99},
                 {"B", 3.0, 60, 64.99}, {"B-", 2.7, 55, 59.99}, {"C+", 2.3, 50, 54.99}, {"C", 2.0, 45, 49.99},
-                {"C-", 1.7, 40, 44.99}, {"D+", 1.3, 35, 39.99}, {"D", 1.0, 30, 34.99}, {"E", 0.0, 0, 29.99}};
+                {"C-", 1.7, 40, 44.99}, {"D", 1.3, 35, 39.99}, {"E", 0.0, 0, 34.99}};
         for (Object[] g : grades) {
             insert(c, "INSERT INTO grade_scale (grade,grade_point,min_marks,max_marks) VALUES (?,?,?,?)", g[0], g[1], g[2], g[3]);
         }
