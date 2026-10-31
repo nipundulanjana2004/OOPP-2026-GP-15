@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : COMMON UI (shared by M1-M4)
- *  PURPOSE : ABSTRACT window with sidebar navigation, user card and logout. Each member's dashboard extends it and only adds its pages.
- *  PLUGS IN: M1 AdminDashboard, M2 LecturerDashboard, M3 OfficerDashboard, M4 UndergraduateDashboard all extend this.
- *  OOP     : ABSTRACTION + INHERITANCE + POLYMORPHISM (same frame, different pages per role).
- * ====================================================================
- */
+
 package common.ui;
 
 import common.DBConnection;
@@ -92,7 +85,25 @@ public abstract class DashboardFrame extends JFrame {
         nav.setOpaque(false);
         nav.setLayout(new BoxLayout(nav, BoxLayout.Y_AXIS));
         nav.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
-        side.add(nav, BorderLayout.CENTER);
+
+        JScrollPane scrollPane = new JScrollPane(nav);
+
+        scrollPane.setVerticalScrollBarPolicy(
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+        );
+
+        scrollPane.setHorizontalScrollBarPolicy(
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
+
+        scrollPane.setBorder(null);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        side.add(scrollPane, BorderLayout.CENTER);
+
 
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setOpaque(false);
@@ -104,7 +115,7 @@ public abstract class DashboardFrame extends JFrame {
         return side;
     }
 
-    /** Small grey heading inside the sidebar. */
+
     protected void addSection(String text) {
         JLabel l = new JLabel(text.toUpperCase());
         l.setFont(new Font("Segoe UI", Font.BOLD, 11));
@@ -114,7 +125,6 @@ public abstract class DashboardFrame extends JFrame {
         nav.add(l);
     }
 
-    /** Registers a page: creates its sidebar button and adds it to the card layout. */
     protected void addPage(String name, BasePanel page) {
         pages.put(name, page);
         content.add(page, name);
@@ -135,7 +145,6 @@ public abstract class DashboardFrame extends JFrame {
         cards.show(content, name);
     }
 
-    /** Call at the end of the subclass constructor. */
     protected void start() {
         nav.add(Box.createVerticalGlue());
         if (firstPage != null) showPage(firstPage);
@@ -148,7 +157,6 @@ public abstract class DashboardFrame extends JFrame {
         new LoginFrame().setVisible(true);
     }
 
-    /** Sidebar button with an accent bar when selected. */
     private static class NavButton extends JButton {
         private boolean selected = false;
         private boolean hover = false;
