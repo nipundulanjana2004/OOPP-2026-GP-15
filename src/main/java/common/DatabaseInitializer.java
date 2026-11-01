@@ -27,6 +27,7 @@ public class DatabaseInitializer {
         }
         Connection c = DBConnection.getConnection();
         runSchema(c);
+        upgradeExistingTables(c);
         try (Statement st = c.createStatement(); ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM app_user")) {
             rs.next();
             if (rs.getInt(1) == 0) {
@@ -34,6 +35,24 @@ public class DatabaseInitializer {
             }
         } catch (SQLException e) {
             throw new DatabaseException("Could not check / fill the sample data.", e);
+        }
+    }
+
+    /** Databases created by an older version of schema.sql get the new columns added here (CREATE TABLE IF NOT EXISTS never alters). */
+    private static void upgradeExistingTables(Connection c) throws DatabaseException {
+        try {
+            boolean hasCourse;
+            try (ResultSet rs = c.getMetaData().getColumns(c.getCatalog(), null, "medical", "course_id")) {
+                hasCourse = rs.next();
+            }
+            if (!hasCourse) {
+                try (Statement st = c.createStatement()) {
+                    st.execute("ALTER TABLE medical ADD COLUMN course_id INT NULL AFTER undergraduate_id");
+                    st.execute("ALTER TABLE medical ADD CONSTRAINT fk_medical_course FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE SET NULL");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not upgrade the medical table.", e);
         }
     }
 

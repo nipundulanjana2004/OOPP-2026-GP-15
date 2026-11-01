@@ -18,8 +18,11 @@ import java.util.List;
 
 public class MedicalPanel extends BasePanel {
     private final TechnicalOfficer officer;
-    private final TablePanel table = new TablePanel("", "Reg. No", "Name", "From", "To", "Reason", "Status", "Verified by");
+    private final TablePanel table = new TablePanel("", "Reg. No", "Name", "Course", "From", "To", "Reason", "Submitted", "Status", "Verified by");
     private final JComboBox<StudentInfo> student = new JComboBox<>();
+    private final JComboBox<Course> course = new JComboBox<>();
+    private static final Course ALL_COURSES = new Course();      // placeholder item: id 0 = not tied to one course
+    static { ALL_COURSES.setCourseCode("All courses"); ALL_COURSES.setCourseName(""); }
     private final JTextField from = Theme.text(18);
     private final JTextField to = Theme.text(18);
     private final JTextField reason = Theme.text(18);
@@ -31,6 +34,7 @@ public class MedicalPanel extends BasePanel {
         this.officer = officer;
         FormPanel f = new FormPanel();
         f.addRow("Undergraduate", student);
+        f.addRow("Course", course);
         f.addRow("From (yyyy-MM-dd)", from);
         f.addRow("To (yyyy-MM-dd)", to);
         f.addRow("Reason", reason);
@@ -70,6 +74,7 @@ public class MedicalPanel extends BasePanel {
             to.setText(m.getDateTo().toString());
             reason.setText(m.getReason());
             doc.setText(m.getDocumentPath());
+            selectCourse(m.getCourse());
             for (int k = 0; k < student.getItemCount(); k++) if (student.getItemAt(k).getUserId() == m.getStudent().getUserId()) student.setSelectedIndex(k);
         });
     }
@@ -79,11 +84,14 @@ public class MedicalPanel extends BasePanel {
         try {
             student.removeAllItems();
             for (StudentInfo s : officer.medicals().studentsOfDepartment(officer.getDepartmentId())) student.addItem(s);
+            course.removeAllItems();
+            course.addItem(ALL_COURSES);
+            for (Course c : officer.departmentCourses()) course.addItem(c);
             items = officer.medicals().findByDepartment(officer.getDepartmentId());
             List<Object[]> rows = new ArrayList<>();
             for (Medical m : items) {
-                rows.add(new Object[]{m.getStudent().getRegistrationNumber(), m.getStudent().getFullName(), m.getDateFrom(), m.getDateTo(),
-                        m.getReason(), m.getApprovalStatus().name(), m.getVerifiedBy()});
+                rows.add(new Object[]{m.getStudent().getRegistrationNumber(), m.getStudent().getFullName(), m.getCourseLabel(), m.getDateFrom(), m.getDateTo(),
+                        m.getReason(), m.getSubmittedDate(), m.getApprovalStatus().name(), m.getVerifiedBy()});
             }
             table.setRows(rows);
         } catch (DatabaseException e) {
@@ -91,8 +99,20 @@ public class MedicalPanel extends BasePanel {
         }
     }
 
+    /** Selects the medical's course in the drop-down (adds it first if it belongs to another department). */
+    private void selectCourse(Course c) {
+        if (c == null) { course.setSelectedItem(ALL_COURSES); return; }
+        for (int k = 0; k < course.getItemCount(); k++) {
+            if (course.getItemAt(k).getCourseId() == c.getCourseId()) { course.setSelectedIndex(k); return; }
+        }
+        course.addItem(c);
+        course.setSelectedItem(c);
+    }
+
     private Medical readForm(Medical m) throws AppException {
         m.setStudent((StudentInfo) student.getSelectedItem());
+        Course chosen = (Course) course.getSelectedItem();
+        m.setCourse(chosen == null || chosen.getCourseId() == 0 ? null : chosen);
         try {
             m.setDateFrom(java.sql.Date.valueOf(from.getText().trim()));
             m.setDateTo(java.sql.Date.valueOf(to.getText().trim()));

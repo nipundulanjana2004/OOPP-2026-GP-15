@@ -70,12 +70,14 @@ public class AttendanceDAO extends BaseDAO {
         return list;
     }
 
-    private int medicalCovering(int studentId, java.sql.Date day) throws SQLException, DatabaseException {
+    private int medicalCovering(int studentId, java.sql.Date day, int courseId) throws SQLException, DatabaseException {
         String sql = "SELECT medical_id FROM medical WHERE undergraduate_id=? AND ? BETWEEN date_from AND date_to " +
+                "AND (course_id IS NULL OR course_id=?) " +
                 "ORDER BY FIELD(approval_status,'APPROVED','PENDING','REJECTED'), medical_id LIMIT 1";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, studentId);
             ps.setDate(2, day);
+            ps.setInt(3, courseId);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() ? rs.getInt(1) : 0;
             }
@@ -90,7 +92,7 @@ public class AttendanceDAO extends BaseDAO {
             conn().setAutoCommit(false);
             try (PreparedStatement ps = conn().prepareStatement(sql)) {
                 for (AttendanceRecord r : records) {
-                    int medical = r.getStatus() == AttendanceStatus.ABSENT ? medicalCovering(r.getStudent().getUserId(), r.getSession().getSessionDate()) : 0;
+                    int medical = r.getStatus() == AttendanceStatus.ABSENT ? medicalCovering(r.getStudent().getUserId(), r.getSession().getSessionDate(), r.getSession().getCourse().getCourseId()) : 0;
                     ps.setInt(1, r.getStudent().getUserId());
                     ps.setInt(2, r.getSession().getSessionId());
                     ps.setString(3, r.getStatus().name());

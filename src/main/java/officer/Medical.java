@@ -9,11 +9,14 @@
 package officer;
 
 import common.ApprovalStatus;
+import common.Course;
 import common.StudentInfo;
 
 public class Medical {
     private int medicalId = 0;
     private StudentInfo student = new StudentInfo();
+    private Course course;                          // the course the absence was in (null = not tied to one course)
+    private java.sql.Date submittedDate;
     private java.sql.Date dateFrom;
     private java.sql.Date dateTo;
     private String reason = "";
@@ -28,6 +31,11 @@ public class Medical {
     public void setMedicalId(int medicalId) { this.medicalId = medicalId; }
     public StudentInfo getStudent() { return student; }
     public void setStudent(StudentInfo student) { this.student = student; }
+    public Course getCourse() { return course; }
+    public void setCourse(Course course) { this.course = course; }
+    public java.sql.Date getSubmittedDate() { return submittedDate; }
+    public void setSubmittedDate(java.sql.Date submittedDate) { this.submittedDate = submittedDate; }
+    public String getCourseLabel() { return course == null ? "All courses" : course.getCourseCode(); }
     public java.sql.Date getDateFrom() { return dateFrom; }
     public void setDateFrom(java.sql.Date dateFrom) { this.dateFrom = dateFrom; }
     public java.sql.Date getDateTo() { return dateTo; }
@@ -53,5 +61,6 @@ public class Medical {
         if (dateFrom == null || dateTo == null) throw new InvalidMedicalException("Both dates are required (format yyyy-MM-dd).");
         if (dateTo.before(dateFrom)) throw new InvalidMedicalException("'To' date cannot be before 'From' date.");
         if (reason == null || reason.trim().isEmpty()) throw new InvalidMedicalException("Please write the reason / diagnosis summary.");
+        if (reason.trim().length() > 200) throw new InvalidMedicalException("The reason can be at most 200 characters.");
     }
 }
