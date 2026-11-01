@@ -14,6 +14,7 @@ public class UndergraduateDashboard extends DashboardFrame {
         addPage("Timetable", new TimetablePanel(user, TimetablePanel.Mode.MINE));
         addSection("Academics");
         addPage("My Courses", new MyCoursesPanel(student));
+        addPage("Materials", new MyMaterialsPanel(student));
         addPage("My Attendance", new MyAttendancePanel(student));
         addPage("My Medicals", new MyMedicalsPanel(student));
         addPage("My Grades", new MyGradesPanel(student));

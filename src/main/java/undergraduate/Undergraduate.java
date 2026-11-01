@@ -47,6 +47,21 @@ public class Undergraduate extends User {
         return dao.registrationsOf(getUserId());
     }
 
+    /** Lecture notes / slides uploaded by the lecturers of the courses I am registered for (FR-17 download side). */
+    public List<lecturer.CourseMaterial> viewMaterials() throws DatabaseException {
+        List<Course> mine = new java.util.ArrayList<>();
+        for (CourseRegistration r : viewCourses()) mine.add(r.getCourse());
+        return new lecturer.MaterialDAO().findForStudent(getUserId(), mine);
+    }
+
+    /** Saves the stored file of one material to the given place (only for courses I am registered for). */
+    public void downloadMaterial(lecturer.CourseMaterial m, java.io.File target) throws AppException {
+        if (!dao.isRegistered(getUserId(), m.getCourse().getCourseId())) {
+            throw new StudentViewException("You are not registered for " + m.getCourse().getCourseCode() + ".");
+        }
+        new lecturer.MaterialDAO().saveFileTo(m.getResourceId(), target);
+    }
+
 
     public AttendanceSummary viewAttendance(Course c) throws AppException {
         if (!dao.isRegistered(getUserId(), c.getCourseId())) {

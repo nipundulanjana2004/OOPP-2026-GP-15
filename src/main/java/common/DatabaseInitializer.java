@@ -54,6 +54,20 @@ public class DatabaseInitializer {
         } catch (SQLException e) {
             throw new DatabaseException("Could not upgrade the medical table.", e);
         }
+        try {
+            boolean hasFile;
+            try (ResultSet rs = c.getMetaData().getColumns(c.getCatalog(), null, "course_material", "file_data")) {
+                hasFile = rs.next();
+            }
+            if (!hasFile) {   // lecture files are now stored in the database so every student can download them
+                try (Statement st = c.createStatement()) {
+                    st.execute("ALTER TABLE course_material ADD COLUMN file_name VARCHAR(255) NULL AFTER file_path");
+                    st.execute("ALTER TABLE course_material ADD COLUMN file_data LONGBLOB NULL AFTER file_name");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not upgrade the course_material table.", e);
+        }
     }
 
     private static void runSchema(Connection c) throws DatabaseException {

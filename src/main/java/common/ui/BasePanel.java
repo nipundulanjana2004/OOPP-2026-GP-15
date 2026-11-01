@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : COMMON UI (shared by M1-M4)
- *  PURPOSE : ABSTRACT parent of every page (title + subtitle + body). onShow() is called each time the page is opened so data is always fresh.
- *  PLUGS IN: ALL pages of M1, M2, M3, M4 extend it (e.g. M1 ManagementPanel, M2 MarkEntryPanel, M3 AttendanceEntryPanel, M4 MyGradesPanel).
- *  OOP     : ABSTRACTION + INHERITANCE + POLYMORPHISM (each page overrides onShow()).
- * ====================================================================
- */
+
 package common.ui;
 
 import javax.swing.*;
@@ -27,5 +20,10 @@ public abstract class BasePanel extends JPanel {
 
     /** Called every time the page becomes visible. Override to (re)load data. */
     public void onShow() {
+    }
+
+    /** Called before the user leaves this page (other page, log out, close). Return false to stay. Override to warn about unsaved work. */
+    public boolean confirmLeave() {
+        return true;
     }
 }
