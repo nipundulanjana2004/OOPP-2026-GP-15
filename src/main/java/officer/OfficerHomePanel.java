@@ -18,7 +18,7 @@ import java.util.List;
 public class OfficerHomePanel extends BasePanel {
     private final TechnicalOfficer officer;
     private final java.awt.Container cards = Theme.transparent(new GridLayout(1, 3, 16, 0));
-    private final TablePanel pending = new TablePanel("Medicals waiting for approval", "Reg. No", "Name", "From", "To", "Reason", "Status");
+    private final TablePanel pending = new TablePanel("Medicals waiting for approval", "Reg. No", "Name", "Course", "From", "To", "Reason", "Status");
 
     public OfficerHomePanel(TechnicalOfficer officer) {
         super("Welcome, " + officer.getFirstName(), officer.getRoleSummary());
@@ -45,7 +45,7 @@ public class OfficerHomePanel extends BasePanel {
             List<Object[]> rows = new ArrayList<>();
             for (Medical m : all) {
                 if (m.getApprovalStatus() == ApprovalStatus.PENDING) {
-                    rows.add(new Object[]{m.getStudent().getRegistrationNumber(), m.getStudent().getFullName(), m.getDateFrom(), m.getDateTo(), m.getReason(), "PENDING"});
+                    rows.add(new Object[]{m.getStudent().getRegistrationNumber(), m.getStudent().getFullName(), m.getCourseLabel(), m.getDateFrom(), m.getDateTo(), m.getReason(), "PENDING"});
                 }
             }
             pending.setRows(rows);

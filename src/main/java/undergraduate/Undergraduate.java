@@ -2,6 +2,9 @@
 package undergraduate;
 
 import common.*;
+import officer.InvalidMedicalException;
+import officer.Medical;
+import officer.MedicalDAO;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -13,6 +16,7 @@ public class Undergraduate extends User {
     private AttemptType academicStatus = AttemptType.PROPER;
     private final ReportService reports = new ReportService();
     private final UndergraduateDAO dao = new UndergraduateDAO();
+    private final MedicalDAO medicalDAO = new MedicalDAO();
 
     public Undergraduate() {
         super(Role.UNDERGRADUATE);
@@ -53,6 +57,24 @@ public class Undergraduate extends User {
 
     public List<MedicalInfo> viewMedicals() throws DatabaseException {
         return reports.medicalsOfStudent(getUserId());
+    }
+
+    /**
+     * The undergraduate asks for a medical to be approved. The paper certificate is handed to the Technical Officer in person;
+     * this only records the request (always PENDING). Returns how many absences were linked to it.
+     */
+    public int submitMedicalRequest(Course course, java.sql.Date from, java.sql.Date to, String reason) throws AppException {
+        if (course == null) throw new InvalidMedicalException("Please choose the course.");
+        if (!dao.isRegistered(getUserId(), course.getCourseId())) {
+            throw new StudentViewException("You are not registered for " + course.getCourseCode() + ".");
+        }
+        Medical m = new Medical();
+        m.setStudent(toStudentInfo());
+        m.setCourse(course);
+        m.setDateFrom(from);
+        m.setDateTo(to);
+        m.setReason(reason == null ? "" : reason.trim());
+        return medicalDAO.insert(m);
     }
 
     public List<CourseResult> viewGrades() throws DatabaseException {

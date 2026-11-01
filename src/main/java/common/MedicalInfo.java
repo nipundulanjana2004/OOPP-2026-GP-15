@@ -10,6 +10,7 @@ public class MedicalInfo {
     private String reason = "";
     private String status = "PENDING";
     private String verifiedBy = "";
+    private String courseCode = "-";
 
     public MedicalInfo() {
     }
@@ -26,6 +27,12 @@ public class MedicalInfo {
         this.verifiedBy = verifiedBy;
     }
 
+    public MedicalInfo(int medicalId, String registrationNumber, String studentName, java.sql.Date dateFrom,
+                       java.sql.Date dateTo, String reason, String status, String verifiedBy, String courseCode) {
+        this(medicalId, registrationNumber, studentName, dateFrom, dateTo, reason, status, verifiedBy);
+        this.courseCode = courseCode == null ? "-" : courseCode;
+    }
+
     public int getMedicalId() { return medicalId; }
     public String getRegistrationNumber() { return registrationNumber; }
     public String getStudentName() { return studentName; }
@@ -34,4 +41,5 @@ public class MedicalInfo {
     public String getReason() { return reason; }
     public String getStatus() { return status; }
     public String getVerifiedBy() { return verifiedBy; }
+    public String getCourseCode() { return courseCode; }
 }

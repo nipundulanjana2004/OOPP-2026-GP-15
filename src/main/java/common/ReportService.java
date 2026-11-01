@@ -135,9 +135,10 @@ public class ReportService extends BaseDAO {
     private List<MedicalInfo> medicals(String where, int param) throws DatabaseException {
         List<MedicalInfo> list = new ArrayList<>();
         String sql = "SELECT m.*, g.registration_number, CONCAT(u.first_name,' ',u.last_name) AS sname, " +
-                "CONCAT(o.first_name,' ',o.last_name) AS officer FROM medical m " +
+                "CONCAT(o.first_name,' ',o.last_name) AS officer, cr.course_code AS ccode FROM medical m " +
                 "JOIN undergraduate g ON g.user_id=m.undergraduate_id JOIN app_user u ON u.user_id=g.user_id " +
-                "LEFT JOIN app_user o ON o.user_id=m.verified_by_officer_id " + where + " ORDER BY m.date_from DESC, m.medical_id DESC";
+                "LEFT JOIN app_user o ON o.user_id=m.verified_by_officer_id " +
+                "LEFT JOIN course cr ON cr.course_id=m.course_id " + where + " ORDER BY m.date_from DESC, m.medical_id DESC";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             if (param > 0) ps.setInt(1, param);
             try (ResultSet rs = ps.executeQuery()) {
@@ -145,7 +146,7 @@ public class ReportService extends BaseDAO {
                     String officer = rs.getString("officer");
                     list.add(new MedicalInfo(rs.getInt("medical_id"), rs.getString("registration_number"), rs.getString("sname"),
                             rs.getDate("date_from"), rs.getDate("date_to"), rs.getString("reason"),
-                            rs.getString("approval_status"), officer == null ? "-" : officer));
+                            rs.getString("approval_status"), officer == null ? "-" : officer, rs.getString("ccode")));
                 }
             }
         } catch (SQLException e) {

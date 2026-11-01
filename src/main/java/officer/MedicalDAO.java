@@ -35,8 +35,10 @@ public class MedicalDAO extends BaseDAO {
 
     public List<Medical> findByDepartment(int departmentId) throws DatabaseException {
         List<Medical> list = new ArrayList<>();
-        String sql = "SELECT m.*, g.registration_number, CONCAT(u.first_name,' ',u.last_name) AS sname, CONCAT(o.first_name,' ',o.last_name) AS officer " +
+        String sql = "SELECT m.*, g.registration_number, CONCAT(u.first_name,' ',u.last_name) AS sname, CONCAT(o.first_name,' ',o.last_name) AS officer, " +
+                "c.course_code AS ccode, c.course_name AS cname " +
                 "FROM medical m JOIN undergraduate g ON g.user_id=m.undergraduate_id JOIN app_user u ON u.user_id=g.user_id " +
+                "LEFT JOIN course c ON c.course_id=m.course_id " +
                 "LEFT JOIN app_user o ON o.user_id=m.verified_by_officer_id WHERE g.department_id=? ORDER BY m.date_from DESC, m.medical_id DESC";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, departmentId);
@@ -45,6 +47,15 @@ public class MedicalDAO extends BaseDAO {
                     Medical m = new Medical();
                     m.setMedicalId(rs.getInt("medical_id"));
                     m.setStudent(new StudentInfo(rs.getInt("undergraduate_id"), rs.getString("registration_number"), rs.getString("sname")));
+                    int courseId = rs.getInt("course_id");
+                    if (!rs.wasNull()) {
+                        Course c = new Course();
+                        c.setCourseId(courseId);
+                        c.setCourseCode(rs.getString("ccode"));
+                        c.setCourseName(rs.getString("cname"));
+                        m.setCourse(c);
+                    }
+                    m.setSubmittedDate(rs.getDate("submitted_date"));
                     m.setDateFrom(rs.getDate("date_from"));
                     m.setDateTo(rs.getDate("date_to"));
                     m.setReason(rs.getString("reason"));
@@ -63,14 +74,15 @@ public class MedicalDAO extends BaseDAO {
     /** Returns how many absences were linked to this medical. */
     public int insert(Medical m) throws AppException {
         m.validate();
-        String sql = "INSERT INTO medical (undergraduate_id,date_from,date_to,reason,document_path,approval_status,submitted_date) VALUES (?,?,?,?,?,'PENDING',?)";
+        String sql = "INSERT INTO medical (undergraduate_id,course_id,date_from,date_to,reason,document_path,approval_status,submitted_date) VALUES (?,?,?,?,?,?,'PENDING',?)";
         try (PreparedStatement ps = conn().prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, m.getStudent().getUserId());
-            ps.setDate(2, m.getDateFrom());
-            ps.setDate(3, m.getDateTo());
-            ps.setString(4, m.getReason());
-            ps.setString(5, m.getDocumentPath());
-            ps.setDate(6, new java.sql.Date(System.currentTimeMillis()));
+            ps.setObject(2, m.getCourse() == null ? null : m.getCourse().getCourseId());
+            ps.setDate(3, m.getDateFrom());
+            ps.setDate(4, m.getDateTo());
+            ps.setString(5, m.getReason());
+            ps.setString(6, m.getDocumentPath());
+            ps.setDate(7, new java.sql.Date(System.currentTimeMillis()));
             ps.executeUpdate();
             try (ResultSet k = ps.getGeneratedKeys()) {
                 k.next();
@@ -84,12 +96,13 @@ public class MedicalDAO extends BaseDAO {
 
     public int update(Medical m) throws AppException {
         m.validate();
-        try (PreparedStatement ps = conn().prepareStatement("UPDATE medical SET date_from=?, date_to=?, reason=?, document_path=? WHERE medical_id=?")) {
-            ps.setDate(1, m.getDateFrom());
-            ps.setDate(2, m.getDateTo());
-            ps.setString(3, m.getReason());
-            ps.setString(4, m.getDocumentPath());
-            ps.setInt(5, m.getMedicalId());
+        try (PreparedStatement ps = conn().prepareStatement("UPDATE medical SET course_id=?, date_from=?, date_to=?, reason=?, document_path=? WHERE medical_id=?")) {
+            ps.setObject(1, m.getCourse() == null ? null : m.getCourse().getCourseId());
+            ps.setDate(2, m.getDateFrom());
+            ps.setDate(3, m.getDateTo());
+            ps.setString(4, m.getReason());
+            ps.setString(5, m.getDocumentPath());
+            ps.setInt(6, m.getMedicalId());
             ps.executeUpdate();
         } catch (SQLException e) {
             throw wrap("updating the medical", e);
@@ -103,15 +116,18 @@ public class MedicalDAO extends BaseDAO {
         return linkAbsences(m);
     }
 
-    /** Links the student's ABSENT sessions inside the medical's date range to this medical. */
+    /** Links the student's ABSENT sessions inside the medical's date range (and of its course, if one was chosen) to this medical. */
     private int linkAbsences(Medical m) throws DatabaseException {
+        boolean oneCourse = m.getCourse() != null;
         String sql = "UPDATE attendance a JOIN class_session cs ON cs.session_id=a.session_id SET a.medical_id=? " +
-                "WHERE a.undergraduate_id=? AND a.status='ABSENT' AND a.medical_id IS NULL AND cs.session_date BETWEEN ? AND ?";
+                "WHERE a.undergraduate_id=? AND a.status='ABSENT' AND a.medical_id IS NULL AND cs.session_date BETWEEN ? AND ?" +
+                (oneCourse ? " AND cs.course_id=?" : "");
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, m.getMedicalId());
             ps.setInt(2, m.getStudent().getUserId());
             ps.setDate(3, m.getDateFrom());
             ps.setDate(4, m.getDateTo());
+            if (oneCourse) ps.setInt(5, m.getCourse().getCourseId());
             return ps.executeUpdate();
         } catch (SQLException e) {
             throw wrap("linking the medical to absences", e);

@@ -28,7 +28,7 @@ public class DBConnection {
                 } else {
                     try (InputStream in = DBConnection.class.getResourceAsStream("/db.properties")) {
                         if (in == null) {
-                            throw new DatabaseException("db.properties not found.");
+                            throw new DatabaseException("db.properties not found (looked in " + external.getAbsolutePath() + " and on the classpath).");
                         }
                         p.load(in);
                     }
