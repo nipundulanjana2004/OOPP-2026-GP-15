@@ -1,9 +1,7 @@
 /*
  * ====================================================================
- *  PART    : M2 - LECTURER
  *  PURPOSE : A continuous-assessment mark (quiz, mid exam, assignment ...).
  *  PLUGS IN: Created by MarkEntryPanel for CA components.
- *  OOP     : INHERITANCE (extends AssessmentMark), POLYMORPHISM (own weightedMark).
  * ====================================================================
  */
 package lecturer;

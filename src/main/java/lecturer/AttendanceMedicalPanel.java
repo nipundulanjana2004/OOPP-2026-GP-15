@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : M2 - LECTURER
- *  PURPOSE : READ-ONLY attendance (theory / practical / combined) and medical records of the students of a course (FR-21). The data is entered by the Technical Officer (M3).
- *  PLUGS IN: LecturerDashboard -> 'Attendance & Medicals'. Uses Lecturer.viewAttendance() and common.ReportService.medicalsOfCourse().
- *  OOP     : Inheritance (extends CoursePanel); reads data written by another member's module.
- * ====================================================================
- */
+
 package lecturer;
 
 import common.*;

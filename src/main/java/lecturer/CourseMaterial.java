@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : M2 - LECTURER
- *  PURPOSE : A lecture note / slide / file attached to a course (class diagram: CourseMaterial).
- *  PLUGS IN: MaterialDAO saves it; MaterialPanel lets the lecturer add/modify/delete; undergraduates could download the file path.
- *  OOP     : INHERITANCE (extends common.AcademicResource), POLYMORPHISM (overrides display()).
- * ====================================================================
- */
+
 package lecturer;
 
 import common.AcademicResource;

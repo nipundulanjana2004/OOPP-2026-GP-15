@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : M2 - LECTURER
- *  PURPOSE : View / add / delete the evaluation components of a course (e.g. Quiz 10%, Mid 20%, Final 60%). Total weightage may not pass 100%.
- *  PLUGS IN: LecturerDashboard -> 'Evaluation Setup'. MarkEntryPanel and common.ReportService use these rows.
- *  OOP     : Inheritance (extends CoursePanel), validation + exception handling.
- * ====================================================================
- */
+
 package lecturer;
 
 import common.*;

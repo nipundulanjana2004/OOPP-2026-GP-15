@@ -1,6 +1,5 @@
 /*
  * ====================================================================
- *  PART    : M2 - LECTURER
  *  PURPOSE : ABSTRACT base of the lecturer pages that work on 'one of my courses' (+ optionally 'one student or the whole batch').
  *  PLUGS IN: MarkEntryPanel, EvaluationSetupPanel, UndergraduateDetailsPanel, EligibilityPanel, ResultsPanel, AttendanceMedicalPanel extend it.
  *  OOP     : ABSTRACTION (abstract refreshData), INHERITANCE, POLYMORPHISM, TEMPLATE-METHOD: combo loading written once.

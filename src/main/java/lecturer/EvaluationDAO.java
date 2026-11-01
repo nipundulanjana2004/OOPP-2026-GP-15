@@ -1,9 +1,7 @@
 /*
  * ====================================================================
- *  PART    : M2 - LECTURER
  *  PURPOSE : Database access for evaluation components (the marking scheme of a course).
  *  PLUGS IN: MarkEntryPanel, EvaluationSetupPanel, Lecturer.
- *  OOP     : INHERITANCE: extends common.BaseDAO.
  * ====================================================================
  */
 package lecturer;

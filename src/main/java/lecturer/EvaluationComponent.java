@@ -1,6 +1,5 @@
 /*
  * ====================================================================
- *  PART    : M2 - LECTURER
  *  PURPOSE : One part of a course's evaluation (e.g. Quiz 1 = CA 10%, Final Exam = FINAL 60%). Marks are always entered out of 100.
  *  PLUGS IN: EvaluationDAO loads them; MarkEntryPanel lets the lecturer enter marks per component; common.ReportService uses the weightages.
  *  OOP     : Encapsulation.

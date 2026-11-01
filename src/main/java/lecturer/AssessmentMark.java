@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : M2 - LECTURER
- *  PURPOSE : ABSTRACT mark of one undergraduate in one evaluation component (class diagram: AssessmentMark).
- *  PLUGS IN: CAMark and FinalExamMark extend it; MarkDAO saves any AssessmentMark; MarkEntryPanel builds the right child from the component type.
- *  OOP     : ABSTRACTION (abstract validate/weightedMark), INHERITANCE, POLYMORPHISM, ENCAPSULATION.
- * ====================================================================
- */
+
 package lecturer;
 
 import common.StudentInfo;
