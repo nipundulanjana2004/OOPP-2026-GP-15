@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : COMMON (shared by M1-M4)
- *  PURPOSE : Light-weight read-only view of an undergraduate (id, reg no, name, batch ...).
- *  PLUGS IN: Returned by LookupDAO; used by M2 (marks entry), M3 (attendance entry) and M1 (lists).
- *  OOP     : Encapsulation (value object).
- * ====================================================================
- */
+
 package common;
 
 public class StudentInfo {

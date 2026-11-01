@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : M2 - LECTURER
- *  PURPOSE : A final-exam mark. Extra rule: the undergraduate must be ELIGIBLE (attendance >= 80% and CA >= 40%).
- *  PLUGS IN: Created by MarkEntryPanel for FINAL components; eligibility comes from common.ReportService.
- *  OOP     : INHERITANCE + POLYMORPHISM (validate() is stricter than the parent), custom exception.
- * ====================================================================
- */
+
 package lecturer;
 
 import common.StudentInfo;

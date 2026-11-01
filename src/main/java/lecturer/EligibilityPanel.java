@@ -1,6 +1,5 @@
 /*
  * ====================================================================
- *  PART    : M2 - LECTURER
  *  PURPOSE : Who may sit the final exam? Attendance >= 80% (medicals counted) AND CA >= 40%. Whole batch or one student (FR-20).
  *  PLUGS IN: LecturerDashboard -> 'Eligibility'. Uses Lecturer.viewEligibility() -> common.ReportService -> AttendanceCalculator (M3 data) + CA rule.
  *  OOP     : Inheritance (extends CoursePanel).

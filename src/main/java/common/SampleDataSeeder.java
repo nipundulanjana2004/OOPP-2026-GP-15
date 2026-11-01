@@ -115,7 +115,7 @@ public class SampleDataSeeder {
             insert(c, "INSERT INTO lecturer (user_id,designation,department_id) VALUES (?,?,?)", lecId[i], lecs[i][2], dept.get(lecs[i][3]));
         }
 
-        // ---------- technical officers (4) ----------
+        // ---------- technical officers all departments(04) ----------
         String[][] tos = {{"Kasun", "Silva", "ICT"}, {"Ishara", "Madushani", "ICT"}, {"Pradeep", "Kumara", "ET"}, {"Thilini", "Herath", "BST"}};
         int[] toId = new int[4];
         Map<String, Integer> officerOfDept = new HashMap<>();
@@ -125,7 +125,7 @@ public class SampleDataSeeder {
             officerOfDept.putIfAbsent(tos[i][2], toId[i]);
         }
 
-        // ---------- courses + lecturer assignment ----------
+        // ---------- courses + lecturer assignment ----
         Map<String, Integer> courseId = new LinkedHashMap<>();
         Map<String, double[]> sessionHours = new HashMap<>();
         for (int i = 0; i < COURSES.length; i++) {
@@ -140,7 +140,7 @@ public class SampleDataSeeder {
             }
         }
 
-        // ---------- undergraduates (20) + registrations ----------
+        // ---------- undergraduates (20) + registrations ---
         int n = STUDENTS.length;
         int[] ugId = new int[n];
         for (int i = 0; i < n; i++) {
@@ -158,7 +158,7 @@ public class SampleDataSeeder {
             }
         }
 
-        // ---------- evaluation components ----------
+        // ---------- evaluation components -------
         Map<String, List<Object[]>> comps = new HashMap<>();   // code -> {id, type, weight}
         for (String[] k : COURSES) {
             int cid = courseId.get(k[0]);
@@ -174,7 +174,7 @@ public class SampleDataSeeder {
             comps.put(k[0], list);
         }
 
-        // ---------- sessions (15 theory + 15 practical) for the CURRENT semester ----------
+        // ---------- sessions (15 theory + 15 practical) for the CURRENT semester -------
         Map<String, int[]> sessionIds = new HashMap<>();
         Map<String, LocalDate[]> sessionDates = new HashMap<>();
         for (String[] k : COURSES) {
@@ -194,7 +194,7 @@ public class SampleDataSeeder {
             }
         }
 
-        // ---------- attendance + medicals (7 patterns rotate => every scenario appears in every course) ----------
+        // ---------- attendance + medicals (7 patterns rotate => every scenario appears in every course) ------
         // 0: >80% (14/15)  1: exactly 80% (12/15)  2: <80% no medicals (9/15)  3: >80% with medicals
         // 4: <80% even with medicals  5: perfect  6: <80% with REJECTED / PENDING medicals
         int[] present = {14, 12, 9, 11, 8, 15, 10};
@@ -244,7 +244,7 @@ public class SampleDataSeeder {
             }
         }
 
-        // ---------- marks ----------
+        // ---------- marks -------
         for (String[] k : COURSES) {
             boolean current = Integer.parseInt(k[4]) == CURRENT_SEMESTER;
             for (int i = 0; i < n; i++) {
@@ -274,7 +274,7 @@ public class SampleDataSeeder {
             }
         }
 
-        // ---------- timetable (current semester, Batch 2024) ----------
+        // ---------- timetable (current semester, Batch 2024) --------
         String[][] tt = {
                 {"ICT2112", "THEORY", "Monday", "08:00", "12:00", "LH-01"}, {"ICT2112", "PRACTICAL", "Wednesday", "13:00", "15:00", "Lab-A"},
                 {"ICT2122", "THEORY", "Tuesday", "08:00", "12:00", "LH-02"}, {"ICT2122", "PRACTICAL", "Thursday", "13:00", "15:00", "Lab-B"},

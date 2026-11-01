@@ -1,11 +1,4 @@
-/*
- * ====================================================================
- *  PART    : COMMON (shared by M1-M4) (M2 publishes, M4 views)
- *  PURPOSE : SGPA of one semester and CGPA up to it for one student.
- *  PLUGS IN: Built by GradeCalculator/ReportService; snapshot stored by M2's ResultDAO.
- *  OOP     : Encapsulation (value object).
- * ====================================================================
- */
+
 package common;
 
 public class SemesterResult {
