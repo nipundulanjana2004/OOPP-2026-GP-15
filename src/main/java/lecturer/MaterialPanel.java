@@ -18,7 +18,7 @@ import java.util.List;
 
 public class MaterialPanel extends BasePanel {
     private final Lecturer lecturer;
-    private final TablePanel table = new TablePanel("", "Date", "Course", "Title", "File");
+    private final TablePanel table = new TablePanel("", "Date", "Course", "Title", "File", "Stored");
     private final JComboBox<Course> course = new JComboBox<>();
     private final JTextField title = Theme.text(18);
     private final JTextField file = Theme.text(18);
@@ -59,7 +59,7 @@ public class MaterialPanel extends BasePanel {
             if (i >= 0) {
                 CourseMaterial m = items.get(i);
                 title.setText(m.getTitle());
-                file.setText(m.getFilePath());
+                file.setText(m.isHasFile() ? "" : m.getFilePath());   // empty = keep the stored file; Browse = replace it
                 for (int k = 0; k < course.getItemCount(); k++) if (course.getItemAt(k).getCourseId() == m.getCourse().getCourseId()) course.setSelectedIndex(k);
             }
         });
@@ -73,7 +73,8 @@ public class MaterialPanel extends BasePanel {
             for (Course c : courses) course.addItem(c);
             items = lecturer.manageMaterials().findByLecturer(lecturer.getUserId(), courses);
             List<Object[]> rows = new ArrayList<>();
-            for (CourseMaterial m : items) rows.add(new Object[]{m.getCreatedDate(), m.getCourse().getCourseCode(), m.getTitle(), m.getFilePath()});
+            for (CourseMaterial m : items) rows.add(new Object[]{m.getCreatedDate(), m.getCourse().getCourseCode(), m.getTitle(),
+                    m.getFileName().isEmpty() ? m.getFilePath() : m.getFileName(), m.isHasFile() ? "YES" : "NO"});
             table.setRows(rows);
         } catch (DatabaseException e) {
             Dialogs.handle(this, e);
@@ -84,7 +85,9 @@ public class MaterialPanel extends BasePanel {
         try {
             if (course.getSelectedItem() == null) throw new ValidationException("You have no courses yet.");
             if (title.getText().trim().isEmpty()) throw new ValidationException("Title is required.");
-            if (file.getText().trim().isEmpty()) throw new ValidationException("Please choose or type a file path.");
+            boolean keepStored = update && table.getSelectedModelRow() >= 0 && items.get(table.getSelectedModelRow()).isHasFile();
+            if (file.getText().trim().isEmpty() && !keepStored) throw new ValidationException("Please choose the file to upload (Browse).");
+            if (!update && !new java.io.File(file.getText().trim()).isFile()) throw new ValidationException("File not found. Use Browse to choose the file students will download.");
             CourseMaterial m;
             if (update) {
                 int i = table.getSelectedModelRow();

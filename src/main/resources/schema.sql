@@ -102,6 +102,8 @@ CREATE TABLE IF NOT EXISTS course_material (
     lecturer_id INT NOT NULL,
     title VARCHAR(150) NOT NULL,
     file_path VARCHAR(255) NOT NULL,
+    file_name VARCHAR(255) NULL,
+    file_data LONGBLOB NULL,
     upload_date DATE NOT NULL,
     FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE CASCADE,
     FOREIGN KEY (lecturer_id) REFERENCES lecturer(user_id) ON DELETE CASCADE

@@ -40,7 +40,7 @@ public class Lecturer extends User {
         return new CourseDAO().findByLecturer(getUserId());
     }
 
-    public void addMaterial(CourseMaterial m) throws DatabaseException {
+    public void addMaterial(CourseMaterial m) throws AppException {
         m.setUploadedBy(getUserId());
         materialDAO.insert(m);
     }

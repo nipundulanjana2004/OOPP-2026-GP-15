@@ -19,11 +19,12 @@ public abstract class DashboardFrame extends JFrame {
     private final Map<String, BasePanel> pages = new LinkedHashMap<>();
     private final Map<String, NavButton> buttons = new LinkedHashMap<>();
     private String firstPage = null;
+    private String currentPage = null;
 
     public DashboardFrame(User user, String roleTitle) {
         super("Faculty of Technology MIS  -  " + roleTitle);
         this.user = user;
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);   // windowClosing below asks about unsaved work first
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         setSize(Math.min(1380, screen.width - 30), Math.min(820, screen.height - 60));
         setMinimumSize(new Dimension(1000, 620));
@@ -35,7 +36,10 @@ public abstract class DashboardFrame extends JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
+                if (!canLeaveCurrentPage()) return;
                 DBConnection.closeConnection();
+                dispose();
+                System.exit(0);
             }
         });
     }
@@ -136,7 +140,14 @@ public abstract class DashboardFrame extends JFrame {
         if (firstPage == null) firstPage = name;
     }
 
+    private boolean canLeaveCurrentPage() {
+        BasePanel cur = currentPage == null ? null : pages.get(currentPage);
+        return cur == null || cur.confirmLeave();
+    }
+
     public void showPage(String name) {
+        if (currentPage != null && !currentPage.equals(name) && !canLeaveCurrentPage()) return;
+        currentPage = name;
         for (Map.Entry<String, NavButton> e : buttons.entrySet()) {
             e.getValue().setSelectedItem(e.getKey().equals(name));
         }
@@ -152,6 +163,7 @@ public abstract class DashboardFrame extends JFrame {
     }
 
     private void logout() {
+        if (!canLeaveCurrentPage()) return;
         user.logout();
         dispose();
         new LoginFrame().setVisible(true);
