@@ -292,9 +292,9 @@ public class SampleDataSeeder {
         }
 
         // ---------- course materials ----------
-        insert(c, "INSERT INTO course_material (course_id,lecturer_id,title,file_path,upload_date) VALUES (?,?,?,?,?)", courseId.get("ICT2112"), lecId[0], "Lecture 01 - Arrays and Lists", "materials/ICT2112_L01.pdf", Date.valueOf("2026-07-07"));
-        insert(c, "INSERT INTO course_material (course_id,lecturer_id,title,file_path,upload_date) VALUES (?,?,?,?,?)", courseId.get("ICT2122"), lecId[1], "ER Diagrams Slides", "materials/ICT2122_ER.pdf", Date.valueOf("2026-07-08"));
-        insert(c, "INSERT INTO course_material (course_id,lecturer_id,title,file_path,upload_date) VALUES (?,?,?,?,?)", courseId.get("ICT2132"), lecId[0], "OOP Mini Project Brief", "materials/ICT2132_Mini_Project.pdf", Date.valueOf("2026-08-01"));
+        insert(c, "INSERT INTO course_material (course_id,lecturer_id,title,file_path,upload_date,from_date,to_date) VALUES (?,?,?,?,?,?,?)", courseId.get("ICT2112"), lecId[0], "Lecture 01 - Arrays and Lists", "materials/ICT2112_L01.pdf", Date.valueOf("2026-07-07"), Date.valueOf("2026-07-07"), Date.valueOf("2026-12-31"));
+        insert(c, "INSERT INTO course_material (course_id,lecturer_id,title,file_path,upload_date,from_date,to_date) VALUES (?,?,?,?,?,?,?)", courseId.get("ICT2122"), lecId[1], "ER Diagrams Slides", "materials/ICT2122_ER.pdf", Date.valueOf("2026-07-08"), Date.valueOf("2026-07-08"), Date.valueOf("2026-12-31"));
+        insert(c, "INSERT INTO course_material (course_id,lecturer_id,title,file_path,upload_date,from_date,to_date) VALUES (?,?,?,?,?,?,?)", courseId.get("ICT2132"), lecId[0], "OOP Mini Project Brief", "materials/ICT2132_Mini_Project.pdf", Date.valueOf("2026-08-01"), Date.valueOf("2026-08-01"), Date.valueOf("2026-12-31"));
 
         // ---------- notices ----------
         Object[][] notices = {

@@ -1,4 +1,3 @@
-
 package common;
 
 import java.io.BufferedReader;
@@ -67,6 +66,20 @@ public class DatabaseInitializer {
             }
         } catch (SQLException e) {
             throw new DatabaseException("Could not upgrade the course_material table.", e);
+        }
+        try {
+            boolean hasDates;
+            try (ResultSet rs = c.getMetaData().getColumns(c.getCatalog(), null, "course_material", "from_date")) {
+                hasDates = rs.next();
+            }
+            if (!hasDates) {   // validity period of a material (NULL = no limit, so old materials stay visible)
+                try (Statement st = c.createStatement()) {
+                    st.execute("ALTER TABLE course_material ADD COLUMN from_date DATE NULL AFTER upload_date");
+                    st.execute("ALTER TABLE course_material ADD COLUMN to_date DATE NULL AFTER from_date");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not add the From / To date columns to the course_material table.", e);
         }
     }
 

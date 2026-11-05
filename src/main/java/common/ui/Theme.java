@@ -86,10 +86,10 @@ public class Theme {
         switch (text.trim().toUpperCase()) {
             case "ELIGIBLE": case "APPROVED": case "PRESENT": case "YES": case "ACTIVE": case "PASS":
                 return SUCCESS;
-            case "NOT ELIGIBLE": case "REJECTED": case "ABSENT": case "NO": case "INACTIVE": case "FAIL": case "<80% WITHOUT MEDICALS":
+            case "NOT ELIGIBLE": case "REJECTED": case "ABSENT": case "NO": case "INACTIVE": case "EXPIRED": case "FAIL": case "<80% WITHOUT MEDICALS":
             case "<80% EVEN WITH MEDICALS": case "NOT ELIGIBLE (ATTENDANCE)": case "NOT ELIGIBLE (CA)":
                 return DANGER;
-            case "PENDING": case "EXACTLY 80%":
+            case "PENDING": case "SCHEDULED": case "EXACTLY 80%":
                 return WARNING;
             default:
                 return null;

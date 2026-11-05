@@ -15,15 +15,16 @@ import lecturer.CourseMaterial;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MyMaterialsPanel extends UndergraduateViewPanel {
-    private final TablePanel table = new TablePanel("", "Date", "Course", "Title", "File", "Available");
+    private final TablePanel table = new TablePanel("", "Date", "Course", "Title", "File", "Has File", "Valid From", "Valid Until", "Status");
     private List<CourseMaterial> items = new ArrayList<>();
 
     public MyMaterialsPanel(Undergraduate student) {
-        super(student, "Course Materials", "Lecture notes and slides shared by your lecturers - select a row and press Download");
+        super(student, "Course Materials", "Lecture notes and slides shared by your lecturers - a material can be downloaded only between its Valid From and Valid Until dates");
         RoundedButton download = new RoundedButton("Download selected", RoundedButton.Kind.SUCCESS);
         download.addActionListener(e -> download());
         table.addToolbarComponent(download);
@@ -43,7 +44,8 @@ public class MyMaterialsPanel extends UndergraduateViewPanel {
         List<Object[]> rows = new ArrayList<>();
         for (CourseMaterial m : items) {
             rows.add(new Object[]{m.getCreatedDate(), m.getCourse().getCourseCode(), m.getTitle(),
-                    m.getFileName().isEmpty() ? "-" : m.getFileName(), m.isHasFile() ? "YES" : "NO"});
+                    m.getFileName().isEmpty() ? "-" : m.getFileName(), m.isHasFile() ? "YES" : "NO",
+                    m.getFromDate() == null ? "-" : m.getFromDate(), m.getToDate() == null ? "-" : m.getToDate(), m.getStatus()});
         }
         table.setRows(rows);
     }
@@ -52,6 +54,17 @@ public class MyMaterialsPanel extends UndergraduateViewPanel {
         int i = table.getSelectedModelRow();
         if (i < 0) { Dialogs.error(this, "Select a material in the table first."); return; }
         CourseMaterial m = items.get(i);
+        if (!m.isActiveOn(LocalDate.now())) {   // Expired / Scheduled / dates not set: the student sees it but cannot use it
+            String why;
+            switch (m.getStatus()) {
+                case "Expired":   why = "This material has EXPIRED. It was available from " + m.getFromDate() + " to " + m.getToDate() + "."; break;
+                case "Scheduled": why = "This material is not open yet. It will be available from " + m.getFromDate() + " to " + m.getToDate() + "."; break;
+                default:          why = "The lecturer has not set the valid dates of this material yet."; break;
+            }
+            Dialogs.error(this, why);
+            onShow();   // refresh in case the period changed since the list was loaded
+            return;
+        }
         if (!m.isHasFile()) { Dialogs.error(this, "The lecturer has not attached a file to this material yet."); return; }
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Save lecture material");

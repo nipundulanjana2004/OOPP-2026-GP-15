@@ -1,4 +1,3 @@
-
 package undergraduate;
 
 import common.*;
@@ -59,7 +58,9 @@ public class Undergraduate extends User {
         if (!dao.isRegistered(getUserId(), m.getCourse().getCourseId())) {
             throw new StudentViewException("You are not registered for " + m.getCourse().getCourseCode() + ".");
         }
-        new lecturer.MaterialDAO().saveFileTo(m.getResourceId(), target);
+        lecturer.MaterialDAO materialDAO = new lecturer.MaterialDAO();
+        materialDAO.requireAvailableToday(m.getResourceId());   // expired / not-yet-started materials cannot be downloaded
+        materialDAO.saveFileTo(m.getResourceId(), target);
     }
 
 
