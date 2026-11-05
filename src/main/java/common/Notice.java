@@ -9,6 +9,8 @@ public class Notice extends AcademicResource {
     private Batch targetBatch = null;
     private int postedBy = 0;
     private String postedByName = "";
+    private java.sql.Date fromDate = null;
+    private java.sql.Date toDate = null;
 
     public Notice() {
     }
@@ -32,6 +34,10 @@ public class Notice extends AcademicResource {
     public void setPostedBy(int postedBy) { this.postedBy = postedBy; }
     public String getPostedByName() { return postedByName; }
     public void setPostedByName(String postedByName) { this.postedByName = postedByName; }
+    public java.sql.Date getFromDate() { return fromDate; }
+    public void setFromDate(java.sql.Date fromDate) { this.fromDate = fromDate; }
+    public java.sql.Date getToDate() { return toDate; }
+    public void setToDate(java.sql.Date toDate) { this.toDate = toDate; }
 
     public String audience() {
         switch (targetType) {

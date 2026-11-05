@@ -119,6 +119,8 @@ CREATE TABLE IF NOT EXISTS notice (
     batch_id INT,
     posted_by INT NOT NULL,
     posted_date DATE NOT NULL,
+    from_date DATE NULL,
+    to_date DATE NULL,
     FOREIGN KEY (posted_by) REFERENCES admin(user_id) ON DELETE CASCADE,
     FOREIGN KEY (department_id) REFERENCES department(department_id) ON DELETE SET NULL,
     FOREIGN KEY (batch_id) REFERENCES batch(batch_id) ON DELETE SET NULL

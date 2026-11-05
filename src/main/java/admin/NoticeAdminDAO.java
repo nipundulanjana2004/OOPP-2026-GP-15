@@ -22,14 +22,16 @@ public class NoticeAdminDAO extends NoticeDAO {
         ps.setString(4, n.getTargetType() == NoticeTarget.ROLE && n.getTargetRole() != null ? n.getTargetRole().name() : null);
         ps.setObject(5, n.getTargetType() == NoticeTarget.DEPARTMENT && n.getTargetDepartment() != null ? n.getTargetDepartment().getDepartmentId() : null);
         ps.setObject(6, n.getTargetType() == NoticeTarget.BATCH && n.getTargetBatch() != null ? n.getTargetBatch().getBatchId() : null);
+        ps.setDate(7, n.getFromDate());   // null -> SQL NULL
+        ps.setDate(8, n.getToDate());
     }
 
     public void insert(Notice n, int adminId) throws DatabaseException {
-        String sql = "INSERT INTO notice (title,content,target_type,target_role,department_id,batch_id,posted_by,posted_date) VALUES (?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO notice (title,content,target_type,target_role,department_id,batch_id,from_date,to_date,posted_by,posted_date) VALUES (?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             bind(ps, n);
-            ps.setInt(7, adminId);
-            ps.setDate(8, new java.sql.Date(System.currentTimeMillis()));
+            ps.setInt(9, adminId);
+            ps.setDate(10, new java.sql.Date(System.currentTimeMillis()));
             ps.executeUpdate();
         } catch (SQLException e) {
             throw wrap("posting the notice", e);
@@ -37,10 +39,10 @@ public class NoticeAdminDAO extends NoticeDAO {
     }
 
     public void update(Notice n) throws DatabaseException {
-        String sql = "UPDATE notice SET title=?, content=?, target_type=?, target_role=?, department_id=?, batch_id=? WHERE notice_id=?";
+        String sql = "UPDATE notice SET title=?, content=?, target_type=?, target_role=?, department_id=?, batch_id=?, from_date=?, to_date=? WHERE notice_id=?";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             bind(ps, n);
-            ps.setInt(7, n.getResourceId());
+            ps.setInt(9, n.getResourceId());
             ps.executeUpdate();
         } catch (SQLException e) {
             throw wrap("updating the notice", e);

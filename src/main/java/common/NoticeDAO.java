@@ -27,6 +27,8 @@ public class NoticeDAO extends BaseDAO {
         }
         n.setPostedBy(rs.getInt("posted_by"));
         n.setPostedByName(rs.getString("poster"));
+        n.setFromDate(rs.getDate("from_date"));
+        n.setToDate(rs.getDate("to_date"));
         return n;
     }
 
@@ -43,8 +45,10 @@ public class NoticeDAO extends BaseDAO {
 
     public List<Notice> findFor(User user) throws DatabaseException {
         List<Notice> list = new ArrayList<>();
-        String sql = SELECT_NOTICE + "WHERE n.target_type='ALL' OR (n.target_type='ROLE' AND n.target_role=?) " +
-                "OR (n.target_type='DEPARTMENT' AND n.department_id=?) OR (n.target_type='BATCH' AND n.batch_id=?) " +
+        String sql = SELECT_NOTICE + "WHERE (n.target_type='ALL' OR (n.target_type='ROLE' AND n.target_role=?) " +
+                "OR (n.target_type='DEPARTMENT' AND n.department_id=?) OR (n.target_type='BATCH' AND n.batch_id=?)) " +
+                "AND (n.from_date IS NULL OR n.from_date <= CURDATE()) " +
+                "AND (n.to_date IS NULL OR n.to_date >= CURDATE()) " +
                 "ORDER BY n.posted_date DESC, n.notice_id DESC";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setString(1, user.getRole().name());

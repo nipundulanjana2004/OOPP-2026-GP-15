@@ -41,18 +41,18 @@ public class DatabaseInitializer {
     /** Databases created by an older version of schema.sql get the new columns added here (CREATE TABLE IF NOT EXISTS never alters). */
     private static void upgradeExistingTables(Connection c) throws DatabaseException {
         try {
-            boolean hasCourse;
-            try (ResultSet rs = c.getMetaData().getColumns(c.getCatalog(), null, "medical", "course_id")) {
-                hasCourse = rs.next();
+            boolean hasFrom;
+            try (ResultSet rs = c.getMetaData().getColumns(c.getCatalog(), null, "notice", "from_date")) {
+                hasFrom = rs.next();
             }
-            if (!hasCourse) {
+            if (!hasFrom) {
                 try (Statement st = c.createStatement()) {
-                    st.execute("ALTER TABLE medical ADD COLUMN course_id INT NULL AFTER undergraduate_id");
-                    st.execute("ALTER TABLE medical ADD CONSTRAINT fk_medical_course FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE SET NULL");
+                    st.execute("ALTER TABLE notice ADD COLUMN from_date DATE NULL AFTER posted_date");
+                    st.execute("ALTER TABLE notice ADD COLUMN to_date DATE NULL AFTER from_date");
                 }
             }
         } catch (SQLException e) {
-            throw new DatabaseException("Could not upgrade the medical table.", e);
+            throw new DatabaseException("Could not upgrade the notice table.", e);
         }
         try {
             boolean hasFile;
