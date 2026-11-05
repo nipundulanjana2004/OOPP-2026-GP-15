@@ -42,7 +42,7 @@ public class UndergraduateDAO extends BaseDAO {
     /** Rows: type, session no, date, status, medical status. */
     public List<Object[]> sessionDetails(int undergraduateId, int courseId) throws DatabaseException {
         List<Object[]> rows = new ArrayList<>();
-        String sql = "SELECT cs.session_type, cs.session_number, cs.session_date, a.status, m.approval_status FROM class_session cs " +
+        String sql = "SELECT cs.session_type, cs.session_number, cs.session_date, a.status, m.approval_status, a.reason FROM class_session cs " +
                 "JOIN attendance a ON a.session_id=cs.session_id AND a.undergraduate_id=? LEFT JOIN medical m ON m.medical_id=a.medical_id " +
                 "WHERE cs.course_id=? ORDER BY cs.session_type, cs.session_number";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
@@ -50,7 +50,13 @@ public class UndergraduateDAO extends BaseDAO {
             ps.setInt(2, courseId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    rows.add(new Object[]{rs.getString(1), rs.getInt(2), rs.getDate(3), rs.getString(4), rs.getString(5) == null ? "-" : rs.getString(5)});
+                    String med = rs.getString(5);
+                    String reason = null;
+                    try { reason = rs.getString(6); } catch (SQLException ignored) {}
+                    String note = (med != null && !med.isEmpty())
+                            ? (reason != null && !reason.isEmpty() ? med + " (" + reason + ")" : med)
+                            : (reason != null && !reason.isEmpty() ? reason : "-");
+                    rows.add(new Object[]{rs.getString(1), rs.getInt(2), rs.getDate(3), rs.getString(4), note});
                 }
             }
         } catch (SQLException e) {

@@ -68,6 +68,19 @@ public class DatabaseInitializer {
         } catch (SQLException e) {
             throw new DatabaseException("Could not upgrade the course_material table.", e);
         }
+        try {
+            boolean hasReason;
+            try (ResultSet rs = c.getMetaData().getColumns(c.getCatalog(), null, "attendance", "reason")) {
+                hasReason = rs.next();
+            }
+            if (!hasReason) {
+                try (Statement st = c.createStatement()) {
+                    st.execute("ALTER TABLE attendance ADD COLUMN reason VARCHAR(255) NULL AFTER medical_id");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not upgrade the attendance table.", e);
+        }
     }
 
     private static void runSchema(Connection c) throws DatabaseException {

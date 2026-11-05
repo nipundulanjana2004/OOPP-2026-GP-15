@@ -36,6 +36,7 @@ public class AttendanceDAO extends BaseDAO {
                     r.setAttendanceId(rs.getInt("attendance_id"));
                     r.setMedicalId(rs.getInt("medical_id"));
                     r.setMedicalStatus(rs.getString("approval_status"));
+                    try { r.setReason(rs.getString("reason")); } catch (SQLException ignored) {}
                     map.put(s.getUserId(), r);
                 }
             }
@@ -48,7 +49,7 @@ public class AttendanceDAO extends BaseDAO {
     /** All sessions of a course (theory + practical) with ONE student's attendance. */
     public List<AttendanceRecord> findByStudent(StudentInfo student, Course course) throws DatabaseException {
         List<AttendanceRecord> list = new ArrayList<>();
-        String sql = "SELECT cs.*, a.attendance_id, a.status, a.medical_id, m.approval_status FROM class_session cs " +
+        String sql = "SELECT cs.*, a.attendance_id, a.status, a.medical_id, a.reason, m.approval_status FROM class_session cs " +
                 "JOIN attendance a ON a.session_id=cs.session_id AND a.undergraduate_id=? LEFT JOIN medical m ON m.medical_id=a.medical_id " +
                 "WHERE cs.course_id=? ORDER BY cs.session_type, cs.session_number";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
@@ -61,6 +62,7 @@ public class AttendanceDAO extends BaseDAO {
                     AttendanceRecord r = AttendanceRecord.create(student, s, AttendanceStatus.valueOf(rs.getString("status")));
                     r.setMedicalId(rs.getInt("medical_id"));
                     r.setMedicalStatus(rs.getString("approval_status"));
+                    try { r.setReason(rs.getString("reason")); } catch (SQLException ignored) {}
                     list.add(r);
                 }
             }
@@ -86,8 +88,8 @@ public class AttendanceDAO extends BaseDAO {
 
     public void saveSession(List<AttendanceRecord> records, int officerId) throws AppException {
         if (records.isEmpty()) throw new AttendanceException("There are no students to record.");
-        String sql = "INSERT INTO attendance (undergraduate_id,session_id,status,recorded_by_officer_id,medical_id) VALUES (?,?,?,?,?) " +
-                "ON DUPLICATE KEY UPDATE status=VALUES(status), recorded_by_officer_id=VALUES(recorded_by_officer_id), medical_id=VALUES(medical_id)";
+        String sql = "INSERT INTO attendance (undergraduate_id,session_id,status,recorded_by_officer_id,medical_id,reason) VALUES (?,?,?,?,?,?) " +
+                "ON DUPLICATE KEY UPDATE status=VALUES(status), recorded_by_officer_id=VALUES(recorded_by_officer_id), medical_id=VALUES(medical_id), reason=VALUES(reason)";
         try {
             conn().setAutoCommit(false);
             try (PreparedStatement ps = conn().prepareStatement(sql)) {
@@ -98,6 +100,7 @@ public class AttendanceDAO extends BaseDAO {
                     ps.setString(3, r.getStatus().name());
                     ps.setInt(4, officerId);
                     ps.setObject(5, medical == 0 ? null : medical);
+                    ps.setString(6, r.getStatus() == AttendanceStatus.PRESENT ? null : (r.getReason().isEmpty() ? null : r.getReason()));
                     ps.executeUpdate();
                 }
             }

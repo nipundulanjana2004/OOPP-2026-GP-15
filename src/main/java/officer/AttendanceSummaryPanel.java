@@ -20,7 +20,7 @@ public class AttendanceSummaryPanel extends OfficerCoursePanel {
     private final JComboBox<Object> studentBox = new JComboBox<>();
     private final TablePanel summary = new TablePanel("Summary (effective % = presence + approved medicals)", "Reg. No", "Name",
             "Theory", "Practical", "Combined", "Combined (presence only)", "Medicals (approved/total)", "Eligible", "Scenario");
-    private final TablePanel detail = new TablePanel("Session by session", "Type", "Session", "Date", "Status", "Medical");
+    private final TablePanel detail = new TablePanel("Session by session", "Type", "Session", "Date", "Status", "Medical / Reason");
     private boolean loadingStudents = false;
 
     public AttendanceSummaryPanel(TechnicalOfficer officer) {
@@ -64,7 +64,7 @@ public class AttendanceSummaryPanel extends OfficerCoursePanel {
                 if (sel instanceof StudentInfo) {
                     for (AttendanceRecord r : officer.attendance().findByStudent((StudentInfo) sel, c)) {
                         det.add(new Object[]{r.getSessionLabel(), r.getSession().getSessionNumber(), r.getSession().getSessionDate(),
-                                r.getStatus().name(), r.getMedicalStatus().isEmpty() ? "-" : r.getMedicalStatus()});
+                                r.getStatus().name(), r.getMedicalStatus().isEmpty() ? (r.getReason().isEmpty() ? "-" : r.getReason()) : (r.getReason().isEmpty() ? r.getMedicalStatus() : r.getMedicalStatus() + " (" + r.getReason() + ")")});
                     }
                 }
             }

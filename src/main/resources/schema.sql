@@ -173,6 +173,7 @@ CREATE TABLE IF NOT EXISTS attendance (
     status VARCHAR(10) NOT NULL,
     recorded_by_officer_id INT,
     medical_id INT,
+    reason VARCHAR(255),
     UNIQUE (undergraduate_id, session_id),
     FOREIGN KEY (undergraduate_id) REFERENCES undergraduate(user_id) ON DELETE CASCADE,
     FOREIGN KEY (session_id) REFERENCES class_session(session_id) ON DELETE CASCADE,

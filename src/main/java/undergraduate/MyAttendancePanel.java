@@ -14,7 +14,7 @@ public class MyAttendancePanel extends UndergraduateViewPanel {
     private final JRadioButton theory = new JRadioButton("Theory");
     private final JRadioButton practical = new JRadioButton("Practical");
     private final TablePanel table = new TablePanel("Attendance by course", "Course", "Presence only", "With approved medicals", "Hours attended / total", "Exam eligible (>=80%)");
-    private final TablePanel detail = new TablePanel("Selected course - session by session", "Type", "Session", "Date", "Status", "Medical");
+    private final TablePanel detail = new TablePanel("Selected course - session by session", "Type", "Session", "Date", "Status", "Medical / Reason");
     private List<Course> courses = new ArrayList<>();
 
     public MyAttendancePanel(Undergraduate student) {

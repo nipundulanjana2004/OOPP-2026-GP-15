@@ -19,6 +19,7 @@ public abstract class AttendanceRecord {
     private AttendanceStatus status = AttendanceStatus.PRESENT;
     private int medicalId = 0;                 // 0 = no medical linked
     private String medicalStatus = "";         // PENDING / APPROVED / REJECTED / ""
+    private String reason = "";                // Reason if attendance was removed
 
     public AttendanceRecord() {
     }
@@ -46,6 +47,8 @@ public abstract class AttendanceRecord {
     public void setMedicalId(int medicalId) { this.medicalId = medicalId; }
     public String getMedicalStatus() { return medicalStatus; }
     public void setMedicalStatus(String medicalStatus) { this.medicalStatus = medicalStatus == null ? "" : medicalStatus; }
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason == null ? "" : reason; }
 
     public boolean isExcused() {
         return status == AttendanceStatus.ABSENT && "APPROVED".equals(medicalStatus);

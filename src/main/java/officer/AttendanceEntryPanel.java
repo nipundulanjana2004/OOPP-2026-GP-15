@@ -20,11 +20,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class AttendanceEntryPanel extends OfficerCoursePanel {
     private final JComboBox<SessionType> typeBox = new JComboBox<>(SessionType.values());
     private final JComboBox<Session> sessionBox = new JComboBox<>();
-    private final TablePanel table = new TablePanel("", "Reg. No", "Name", "Attempt", "Present", "Medical");
+    private final TablePanel table = new TablePanel("", "Reg. No", "Name", "Attempt", "Present", "Medical / Reason");
     private final JLabel status = Theme.muted(" ");
     private List<AttendanceRecord> rows = new ArrayList<>();
     /** Ticks changed but NOT yet saved: sessionId -> ready-to-save records. */
@@ -65,6 +66,7 @@ public class AttendanceEntryPanel extends OfficerCoursePanel {
 
         table.setEditableColumns(3);
         table.setColumnWidth(0, 120);
+        setupAttendanceCheckboxEditor();
         body.add(table, BorderLayout.CENTER);
         body.add(bottom, BorderLayout.SOUTH);
 
@@ -79,11 +81,136 @@ public class AttendanceEntryPanel extends OfficerCoursePanel {
         sessionBox.addActionListener(e -> { if (!loading) { rememberTicks(); loadRows(); } });
     }
 
+    private void setupAttendanceCheckboxEditor() {
+        JCheckBox editorCheckBox = new JCheckBox();
+        editorCheckBox.setHorizontalAlignment(SwingConstants.CENTER);
+        editorCheckBox.setOpaque(true);
+
+        DefaultCellEditor editor = new DefaultCellEditor(editorCheckBox) {
+            private boolean originalVal = false;
+            private int editingViewRow = -1;
+
+            @Override
+            public Component getTableCellEditorComponent(JTable tbl, Object value, boolean isSelected, int row, int column) {
+                originalVal = Boolean.TRUE.equals(value);
+                editingViewRow = row;
+                return super.getTableCellEditorComponent(tbl, value, isSelected, row, column);
+            }
+
+            @Override
+            public boolean stopCellEditing() {
+                boolean currentSelected = editorCheckBox.isSelected();
+                int viewRow = editingViewRow;
+                int modelRow = viewRow >= 0 && viewRow < table.getTable().getRowCount()
+                        ? table.getTable().convertRowIndexToModel(viewRow)
+                        : -1;
+
+                if (modelRow >= 0 && modelRow < rows.size()) {
+                    AttendanceRecord record = rows.get(modelRow);
+                    if (originalVal && !currentSelected) {
+                        // Unchecking already checked checkbox -> ask confirmation & reason
+                        String reason = promptRemovalReason(record.getStudent());
+                        if (reason == null) {
+                            // User clicked No / cancelled -> keep checked
+                            cancelCellEditing();
+                            return false;
+                        } else {
+                            // User clicked Yes with reason -> remove attendance
+                            record.setStatus(AttendanceStatus.ABSENT);
+                            record.setReason(reason);
+                            table.getModel().setValueAt(formatReason(record, AttendanceStatus.ABSENT), modelRow, 4);
+                            editorCheckBox.setSelected(false);
+                            return super.stopCellEditing();
+                        }
+                    } else if (!originalVal && currentSelected) {
+                        // Ticking empty checkbox -> do nothing extra, mark present, clear removal reason
+                        record.setStatus(AttendanceStatus.PRESENT);
+                        record.setReason("");
+                        table.getModel().setValueAt(formatReason(record, AttendanceStatus.PRESENT), modelRow, 4);
+                        editorCheckBox.setSelected(true);
+                        return super.stopCellEditing();
+                    }
+                }
+                return super.stopCellEditing();
+            }
+        };
+        table.getTable().getColumnModel().getColumn(3).setCellEditor(editor);
+    }
+
+    private String promptRemovalReason(StudentInfo st) {
+        JPanel panel = new JPanel(new BorderLayout(0, 10));
+
+        JPanel msgPanel = new JPanel(new GridLayout(0, 1, 0, 4));
+        JLabel warnLabel = new JLabel("Are you sure to remove the attendance of this student?");
+        warnLabel.setFont(Theme.BOLD);
+        warnLabel.setForeground(Theme.DANGER);
+        JLabel studentLabel = new JLabel("Student: " + st.getFullName() + " (" + st.getRegistrationNumber() + ")");
+        studentLabel.setFont(Theme.BASE);
+        msgPanel.add(warnLabel);
+        msgPanel.add(studentLabel);
+
+        JPanel inputPanel = new JPanel(new BorderLayout(0, 6));
+        JLabel reasonLabel = new JLabel("Please enter the reason for removing attendance:");
+        reasonLabel.setFont(Theme.BASE);
+        JTextField reasonField = new JTextField(25);
+        reasonField.setFont(Theme.BASE);
+        inputPanel.add(reasonLabel, BorderLayout.NORTH);
+        inputPanel.add(reasonField, BorderLayout.CENTER);
+
+        panel.add(msgPanel, BorderLayout.NORTH);
+        panel.add(inputPanel, BorderLayout.CENTER);
+
+        SwingUtilities.invokeLater(reasonField::requestFocusInWindow);
+
+        while (true) {
+            int choice = JOptionPane.showOptionDialog(
+                    this,
+                    panel,
+                    "Warning - Remove Attendance",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null,
+                    new Object[]{"Yes", "No"},
+                    "Yes"
+            );
+
+            if (choice == JOptionPane.YES_OPTION) {
+                String reason = reasonField.getText().trim();
+                if (reason.isEmpty()) {
+                    JOptionPane.showMessageDialog(this,
+                            "Please enter a reason for removing attendance.",
+                            "Reason Required",
+                            JOptionPane.WARNING_MESSAGE);
+                    continue;
+                }
+                return reason;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    private String formatReason(AttendanceRecord r, AttendanceStatus s) {
+        if (s == AttendanceStatus.PRESENT) {
+            return "";
+        }
+        String med = r.getMedicalStatus() == null ? "" : r.getMedicalStatus().trim();
+        String reason = r.getReason() == null ? "" : r.getReason().trim();
+        if (!med.isEmpty() && !reason.isEmpty()) {
+            return med + " (" + reason + ")";
+        }
+        if (!reason.isEmpty()) {
+            return reason;
+        }
+        return med;
+    }
+
     // ------------------------------ unsaved-work handling ------------------------------
     private void markUnsaved() {
         captureTicks();                 // NO stopEditing() here: we are already inside the cell editor's own event
-        status.setForeground(Theme.WARNING);
-        status.setText("Not saved yet");
+        boolean pending = shownSession != null && unsaved.containsKey(shownSession.getSessionId());
+        status.setForeground(pending ? Theme.WARNING : Theme.MUTED);
+        status.setText(pending ? "Not saved yet" : " ");
     }
 
     /** Copies the ticks on screen into 'unsaved' (only when the officer changed something on this session). */
@@ -101,7 +228,10 @@ public class AttendanceEntryPanel extends OfficerCoursePanel {
     }
 
     private boolean changedFromStored(List<AttendanceRecord> now) {
-        for (int i = 0; i < now.size(); i++) if (now.get(i).getStatus() != rows.get(i).getStatus()) return true;
+        for (int i = 0; i < now.size(); i++) {
+            if (now.get(i).getStatus() != rows.get(i).getStatus()) return true;
+            if (!Objects.equals(now.get(i).getReason(), rows.get(i).getReason())) return true;
+        }
         return false;
     }
 
@@ -109,7 +239,13 @@ public class AttendanceEntryPanel extends OfficerCoursePanel {
         List<AttendanceRecord> out = new ArrayList<>();
         for (int i = 0; i < rows.size(); i++) {
             boolean present = Boolean.TRUE.equals(table.getModel().getValueAt(i, 3));
-            out.add(AttendanceRecord.create(rows.get(i).getStudent(), s, present ? AttendanceStatus.PRESENT : AttendanceStatus.ABSENT));
+            AttendanceRecord src = rows.get(i);
+            AttendanceRecord r = AttendanceRecord.create(src.getStudent(), s, present ? AttendanceStatus.PRESENT : AttendanceStatus.ABSENT);
+            r.setAttendanceId(src.getAttendanceId());
+            r.setMedicalId(src.getMedicalId());
+            r.setMedicalStatus(src.getMedicalStatus());
+            r.setReason(present ? "" : src.getReason());
+            out.add(r);
         }
         return out;
     }
@@ -187,16 +323,21 @@ public class AttendanceEntryPanel extends OfficerCoursePanel {
         try {
             if (s != null) {
                 Map<Integer, AttendanceRecord> saved = officer.attendance().findBySession(s, students);
-                Map<Integer, AttendanceStatus> draft = new HashMap<>();
+                Map<Integer, AttendanceRecord> draft = new HashMap<>();
                 List<AttendanceRecord> d = unsaved.get(s.getSessionId());
-                if (d != null) for (AttendanceRecord r : d) draft.put(r.getStudent().getUserId(), r.getStatus());
+                if (d != null) for (AttendanceRecord r : d) draft.put(r.getStudent().getUserId(), r);
                 for (StudentInfo st : students) {
                     AttendanceRecord r = saved.get(st.getUserId());
                     if (r == null) r = AttendanceRecord.create(st, s, AttendanceStatus.PRESENT);   // default: present
+                    if (draft.containsKey(st.getUserId())) {
+                        AttendanceRecord dr = draft.get(st.getUserId());
+                        r.setStatus(dr.getStatus());
+                        r.setReason(dr.getReason());
+                    }
                     rows.add(r);
-                    AttendanceStatus shown = draft.containsKey(st.getUserId()) ? draft.get(st.getUserId()) : r.getStatus();
+                    boolean isPresent = r.getStatus() == AttendanceStatus.PRESENT;
                     data.add(new Object[]{st.getRegistrationNumber(), st.getFullName(), st.getAttemptType(),
-                            shown == AttendanceStatus.PRESENT, r.getMedicalStatus().isEmpty() ? "" : r.getMedicalStatus()});
+                            isPresent, formatReason(r, r.getStatus())});
                 }
             }
         } catch (DatabaseException e) {
@@ -204,6 +345,7 @@ public class AttendanceEntryPanel extends OfficerCoursePanel {
         }
         populating = true;
         table.setRows(data);
+        setupAttendanceCheckboxEditor();
         populating = false;
         boolean pending = s != null && unsaved.containsKey(s.getSessionId());
         status.setForeground(pending ? Theme.WARNING : Theme.MUTED);
@@ -212,7 +354,78 @@ public class AttendanceEntryPanel extends OfficerCoursePanel {
 
     private void setAll(boolean present) {
         table.stopEditing();
-        for (int i = 0; i < table.getModel().getRowCount(); i++) table.getModel().setValueAt(present, i, 3);
+        if (!present) {
+            boolean anyPresent = false;
+            for (AttendanceRecord r : rows) {
+                if (r.getStatus() == AttendanceStatus.PRESENT) {
+                    anyPresent = true;
+                    break;
+                }
+            }
+            if (!anyPresent) return;
+
+            JPanel panel = new JPanel(new BorderLayout(0, 10));
+            JPanel msgPanel = new JPanel(new GridLayout(0, 1, 0, 4));
+            JLabel warnLabel = new JLabel("Are you sure to remove the attendance of all students?");
+            warnLabel.setFont(Theme.BOLD);
+            warnLabel.setForeground(Theme.DANGER);
+            msgPanel.add(warnLabel);
+
+            JPanel inputPanel = new JPanel(new BorderLayout(0, 6));
+            JLabel reasonLabel = new JLabel("Please enter the reason for removing attendance:");
+            reasonLabel.setFont(Theme.BASE);
+            JTextField reasonField = new JTextField(25);
+            reasonField.setFont(Theme.BASE);
+            inputPanel.add(reasonLabel, BorderLayout.NORTH);
+            inputPanel.add(reasonField, BorderLayout.CENTER);
+
+            panel.add(msgPanel, BorderLayout.NORTH);
+            panel.add(inputPanel, BorderLayout.CENTER);
+            SwingUtilities.invokeLater(reasonField::requestFocusInWindow);
+
+            while (true) {
+                int choice = JOptionPane.showOptionDialog(
+                        this,
+                        panel,
+                        "Warning - Remove Attendance",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE,
+                        null,
+                        new Object[]{"Yes", "No"},
+                        "Yes"
+                );
+                if (choice == JOptionPane.YES_OPTION) {
+                    String reason = reasonField.getText().trim();
+                    if (reason.isEmpty()) {
+                        JOptionPane.showMessageDialog(this,
+                                "Please enter a reason for removing attendance.",
+                                "Reason Required",
+                                JOptionPane.WARNING_MESSAGE);
+                        continue;
+                    }
+                    for (int i = 0; i < rows.size(); i++) {
+                        AttendanceRecord r = rows.get(i);
+                        r.setStatus(AttendanceStatus.ABSENT);
+                        r.setReason(reason);
+                        table.getModel().setValueAt(false, i, 3);
+                        table.getModel().setValueAt(formatReason(r, AttendanceStatus.ABSENT), i, 4);
+                    }
+                    markUnsaved();
+                    break;
+                } else {
+                    return;
+                }
+            }
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                AttendanceRecord r = rows.get(i);
+                r.setStatus(AttendanceStatus.PRESENT);
+                r.setReason("");
+                table.getModel().setValueAt(true, i, 3);
+                table.getModel().setValueAt(formatReason(r, AttendanceStatus.PRESENT), i, 4);
+            }
+            markUnsaved();
+        }
     }
 
     private void generate() {
