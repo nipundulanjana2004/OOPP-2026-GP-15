@@ -59,6 +59,25 @@ public class UndergraduateDAO extends BaseDAO {
         return rows;
     }
 
+    /** ABSENT sessions of one course that are not covered by any medical yet (newest first). */
+    public List<AbsentSession> unclaimedAbsences(int undergraduateId, int courseId) throws DatabaseException {
+        List<AbsentSession> list = new ArrayList<>();
+        String sql = "SELECT cs.session_date, cs.session_type, cs.session_number FROM attendance a " +
+                "JOIN class_session cs ON cs.session_id=a.session_id " +
+                "WHERE a.undergraduate_id=? AND cs.course_id=? AND a.status='ABSENT' AND a.medical_id IS NULL " +
+                "ORDER BY cs.session_date DESC, cs.session_type, cs.session_number";
+        try (PreparedStatement ps = conn().prepareStatement(sql)) {
+            ps.setInt(1, undergraduateId);
+            ps.setInt(2, courseId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) list.add(new AbsentSession(rs.getDate(1), rs.getString(2), rs.getInt(3)));
+            }
+        } catch (SQLException e) {
+            throw wrap("loading your absences", e);
+        }
+        return list;
+    }
+
     public boolean isRegistered(int undergraduateId, int courseId) throws DatabaseException {
         try (PreparedStatement ps = conn().prepareStatement("SELECT 1 FROM course_registration WHERE undergraduate_id=? AND course_id=?")) {
             ps.setInt(1, undergraduateId);

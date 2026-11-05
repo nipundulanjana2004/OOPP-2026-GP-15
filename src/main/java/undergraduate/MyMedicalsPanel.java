@@ -15,20 +15,24 @@ public class MyMedicalsPanel extends UndergraduateViewPanel {
     private final TablePanel table = new TablePanel("", "Course", "From", "To", "Reason", "Status", "Verified by");
     private final JLabel summary = Theme.muted("");
     private final JComboBox<Course> course = new JComboBox<>();
-    private final JTextField from = Theme.text(18);
-    private final JTextField to = Theme.text(18);
+    private final JComboBox<AbsentSession> absent = new JComboBox<>();
+    private final JLabel absentHint = Theme.muted("");
+    private final RoundedButton submit = new RoundedButton("Submit request");
+    private boolean loading = false;
     private final JTextField reason = Theme.text(18);
 
     public MyMedicalsPanel(Undergraduate student) {
         super(student, "My Medicals", "Request a medical here and hand the paper certificate to your Technical Officer. Approved medicals count towards attendance.");
         FormPanel f = new FormPanel();
         f.addRow("Course", course);
-        f.addRow("From (yyyy-MM-dd)", from);
-        f.addRow("To (yyyy-MM-dd)", to);
+        f.addRow("Absent date", absent);
+        f.addRow("", absentHint);
         f.addRow("Reason", reason);
         JLabel note = Theme.muted("<html>The medical certificate itself is NOT uploaded here. Give the<br>original paper medical to the Technical Officer.<br>Your request stays PENDING until the officer<br>checks it and approves or rejects it.</html>");
         f.addRow("Note:", note);
-        RoundedButton submit = new RoundedButton("Submit request");
+        course.addActionListener(e -> {
+            if (!loading) refreshAbsences();
+        });
         submit.addActionListener(e -> submitRequest());
         f.addButtons(submit);
         f.finish();
@@ -47,22 +51,33 @@ public class MyMedicalsPanel extends UndergraduateViewPanel {
     }
 
     private void resetForm() {
-        String today = LocalDate.now().toString();
-        from.setText(today);
-        to.setText(today);
         reason.setText("");
+    }
+
+    /** Fills the "Absent date" list for the chosen course: only absences from the last 14 days with no medical yet. */
+    private void refreshAbsences() {
+        absent.removeAllItems();
+        Course c = (Course) course.getSelectedItem();
+        if (c != null) {
+            try {
+                for (AbsentSession a : student.viewClaimableAbsences(c)) absent.addItem(a);
+            } catch (AppException e) {
+                Dialogs.handle(this, e);
+            }
+        }
+        boolean any = absent.getItemCount() > 0;
+        submit.setEnabled(any);
+        absentHint.setText(any
+                ? "<html>Only absences of the last " + Undergraduate.MEDICAL_WINDOW_DAYS + " days can be claimed.</html>"
+                : "<html>No absences to claim in the last " + Undergraduate.MEDICAL_WINDOW_DAYS + " days for this course.</html>");
     }
 
     private void submitRequest() {
         try {
-            java.sql.Date d1;
-            java.sql.Date d2;
-            try {
-                d1 = java.sql.Date.valueOf(from.getText().trim());
-                d2 = java.sql.Date.valueOf(to.getText().trim());
-            } catch (IllegalArgumentException e) {
-                throw new InvalidMedicalException("Dates must look like 2026-08-14.");
-            }
+            AbsentSession picked = (AbsentSession) absent.getSelectedItem();
+            if (picked == null) throw new InvalidMedicalException("Please select an absent date.");
+            java.sql.Date d1 = picked.getDate();
+            java.sql.Date d2 = picked.getDate();
             student.submitMedicalRequest((Course) course.getSelectedItem(), d1, d2, reason.getText());
             Dialogs.info(this, "Your medical request was sent to the Technical Officer.\n"
                     + "Please hand your original paper medical certificate to the Technical Officer.\n"
@@ -76,12 +91,15 @@ public class MyMedicalsPanel extends UndergraduateViewPanel {
 
     @Override
     protected void loadData() throws AppException {
+        loading = true;
         Course chosen = (Course) course.getSelectedItem();
         course.removeAllItems();
         for (CourseRegistration r : student.viewCourses()) {
             course.addItem(r.getCourse());
             if (chosen != null && chosen.getCourseId() == r.getCourse().getCourseId()) course.setSelectedIndex(course.getItemCount() - 1);
         }
+        loading = false;
+        refreshAbsences();
         List<Object[]> rows = new ArrayList<>();
         int ok = 0, pending = 0, rejected = 0;
         for (MedicalInfo m : student.viewMedicals()) {

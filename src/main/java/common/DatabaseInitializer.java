@@ -33,6 +33,7 @@ public class DatabaseInitializer {
             if (rs.getInt(1) == 0) {
                 SampleDataSeeder.seed(c);
             }
+            SampleDataSeeder.ensureDemoAbsences(c);     // demo: recent absences for ug01 (see "My Medicals")
         } catch (SQLException e) {
             throw new DatabaseException("Could not check / fill the sample data.", e);
         }

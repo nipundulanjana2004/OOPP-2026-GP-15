@@ -70,6 +70,62 @@ public class SampleDataSeeder {
                 username, PasswordUtil.hash(pw), first, last, email, tel, "Matara, Sri Lanka", "", role.name(), Date.valueOf(LocalDate.of(2026, 6, 1)));
     }
 
+    /**
+     * DEMO helper: makes sure undergraduate "ug01" has some recent ABSENT sessions (no medical yet) so the
+     * "My Medicals" page has absent dates to pick. Dates are relative to TODAY, so it works on any day.
+     * Safe to call on every start: does nothing while ug01 still has an unclaimed absence inside the 14-day window.
+     */
+    public static void ensureDemoAbsences(Connection c) throws SQLException {
+        int ug = 0;
+        try (PreparedStatement ps = c.prepareStatement("SELECT user_id FROM app_user WHERE username='ug01' AND role='UNDERGRADUATE'");
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) ug = rs.getInt(1);
+        }
+        if (ug == 0) return;
+
+        try (PreparedStatement ps = c.prepareStatement("SELECT 1 FROM attendance a JOIN class_session cs ON cs.session_id=a.session_id " +
+                "WHERE a.undergraduate_id=? AND a.status='ABSENT' AND a.medical_id IS NULL AND cs.session_date >= ? LIMIT 1")) {
+            ps.setInt(1, ug);
+            ps.setDate(2, Date.valueOf(LocalDate.now().minusDays(14)));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return;
+            }
+        }
+
+        // {course code, session type, days ago}: the last one (20 days) is too old and will NOT be offered.
+        Object[][] plan = {{"ICT2112", "THEORY", 2}, {"ICT2112", "PRACTICAL", 6}, {"ICT2122", "THEORY", 9},
+                {"ICT2132", "PRACTICAL", 13}, {"ICT2112", "THEORY", 20}};
+        Integer officer = null;
+        try (PreparedStatement ps = c.prepareStatement("SELECT user_id FROM technical_officer ORDER BY user_id LIMIT 1");
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) officer = rs.getInt(1);
+        }
+        for (Object[] d : plan) {
+            int courseId = 0;
+            try (PreparedStatement ps = c.prepareStatement("SELECT c.course_id FROM course c JOIN course_registration r ON r.course_id=c.course_id " +
+                    "WHERE r.undergraduate_id=? AND c.course_code=?")) {
+                ps.setInt(1, ug);
+                ps.setString(2, (String) d[0]);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) courseId = rs.getInt(1);
+                }
+            }
+            if (courseId == 0) continue;
+            int next = 101;
+            try (PreparedStatement ps = c.prepareStatement("SELECT MAX(session_number) FROM class_session WHERE course_id=? AND session_type=?")) {
+                ps.setInt(1, courseId);
+                ps.setString(2, (String) d[1]);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) next = Math.max(101, rs.getInt(1) + 1);
+                }
+            }
+            int sessionId = insert(c, "INSERT INTO class_session (course_id,session_type,session_number,session_date,duration_hours) VALUES (?,?,?,?,?)",
+                    courseId, d[1], next, Date.valueOf(LocalDate.now().minusDays((Integer) d[2])), 2.0);
+            insert(c, "INSERT INTO attendance (undergraduate_id,session_id,status,recorded_by_officer_id,medical_id) VALUES (?,?,'ABSENT',?,NULL)",
+                    ug, sessionId, officer);
+        }
+    }
+
     private static int clamp(double v) {
         return (int) Math.max(0, Math.min(100, Math.round(v)));
     }

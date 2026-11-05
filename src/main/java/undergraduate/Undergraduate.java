@@ -10,6 +10,9 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class Undergraduate extends User {
+    /** A medical can be requested only within this many days after the absent date. */
+    public static final int MEDICAL_WINDOW_DAYS = 14;
+
     private String registrationNumber = "";
     private Batch batch = new Batch();
     private Department department = new Department();
@@ -70,6 +73,20 @@ public class Undergraduate extends User {
         return reports.attendanceFor(toStudentInfo(), c);
     }
 
+    /** My absences in this course that still have no medical AND are inside the 14-day window. */
+    public List<AbsentSession> viewClaimableAbsences(Course c) throws DatabaseException {
+        List<AbsentSession> result = new ArrayList<>();
+        for (AbsentSession a : dao.unclaimedAbsences(getUserId(), c.getCourseId())) {
+            if (isWithinMedicalWindow(a.getDate())) result.add(a);
+        }
+        return result;
+    }
+
+    private static boolean isWithinMedicalWindow(java.sql.Date absentDate) {
+        long days = java.time.temporal.ChronoUnit.DAYS.between(absentDate.toLocalDate(), java.time.LocalDate.now());
+        return days <= MEDICAL_WINDOW_DAYS;
+    }
+
     public List<MedicalInfo> viewMedicals() throws DatabaseException {
         return reports.medicalsOfStudent(getUserId());
     }
@@ -82,6 +99,11 @@ public class Undergraduate extends User {
         if (course == null) throw new InvalidMedicalException("Please choose the course.");
         if (!dao.isRegistered(getUserId(), course.getCourseId())) {
             throw new StudentViewException("You are not registered for " + course.getCourseCode() + ".");
+        }
+        if (from == null || to == null) throw new InvalidMedicalException("Please select the absent date.");
+        if (!isWithinMedicalWindow(from) || !isWithinMedicalWindow(to)) {
+            throw new InvalidMedicalException("A medical can only be requested within " + MEDICAL_WINDOW_DAYS
+                    + " days of the absent date. This date is too old.");
         }
         Medical m = new Medical();
         m.setStudent(toStudentInfo());
